@@ -12,6 +12,7 @@ import Dashboard from "./pages/dashboard/Index";
 import Portfolio from "./pages/dashboard/Portfolio";
 import Profile from "./pages/dashboard/Profile";
 import Trading from "./pages/dashboard/Trading";
+import Wallet from "./pages/dashboard/Wallet";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/trading" element={<Trading />} />
+          <Route path="/wallet" element={<Wallet />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,8 +45,20 @@
     @apply border-border;
   }
   
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
   body {
     @apply bg-background text-foreground antialiased;
+  }
+
+  .font-mono {
+    font-family: 'Roboto Mono', monospace;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
   }
   
   /* Custom glass style for cards */
@@ -65,4 +79,53 @@
   .chart-container {
     @apply bg-card rounded-lg p-4 border border-border/50;
   }
+
+  /* Finance specific styles */
+  .finance-numeral {
+    @apply font-mono font-medium;
+  }
+
+  /* Decorative elements */
+  .wealth-gradient {
+    @apply bg-gradient-to-r from-wealth-primary to-wealth-accent text-transparent bg-clip-text;
+  }
+}
+
+/* Custom animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+/* Data visualization enhancements */
+.number-display {
+  @apply font-mono text-xl font-bold;
 }
