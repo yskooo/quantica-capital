@@ -79,11 +79,14 @@ const Dashboard = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               {/* Portfolio Holdings */}
               <Card className="glass-card lg:col-span-2">
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-xl font-semibold">Portfolio Summary</CardTitle>
+                  <Link to="/portfolio">
+                    <Button variant="ghost" size="sm">View All</Button>
+                  </Link>
                 </CardHeader>
                 <CardContent>
                   <PortfolioSummary />
@@ -101,17 +104,20 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Market Overview */}
-            <div className="mt-6">
-              <Card className="glass-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-semibold">Market Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <MarketOverview />
-                </CardContent>
-              </Card>
-            </div>
+            {/* Market Overview with Trading Link */}
+            <Card className="glass-card mb-6">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-xl font-semibold">Market Overview</CardTitle>
+                <Link to="/trading">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <ChartLine className="h-4 w-4" /> Trading
+                  </Button>
+                </Link>
+              </CardHeader>
+              <CardContent>
+                <MarketOverview />
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>

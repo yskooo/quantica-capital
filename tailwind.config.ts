@@ -59,6 +59,14 @@ export default {
           bear: "#FF3D57", // Red for down trends
           neutral: "#8E9196", // Neutral for no change
         },
+        // Wealth theme colors
+        wealth: {
+          primary: "#00C853",      // Rich green
+          secondary: "#4CAF50",    // Secondary green
+          accent: "#FFD700",       // Gold
+          dark: "#1A5336",         // Dark green
+          light: "#E8F5E9",        // Light green
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

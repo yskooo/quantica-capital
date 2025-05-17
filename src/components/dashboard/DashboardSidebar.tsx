@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
   ChartLine, 
@@ -9,7 +9,8 @@ import {
   User, 
   Settings, 
   ArrowLeft, 
-  ArrowRight
+  ArrowRight,
+  DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,8 @@ interface SidebarProps {
 }
 
 const DashboardSidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
+  const location = useLocation();
+  
   return (
     <>
       {/* Mobile sidebar backdrop */}
@@ -60,12 +63,12 @@ const DashboardSidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
             Navigation
           </h2>
           <nav className="space-y-1">
-            <SidebarItem to="/dashboard" icon={<LayoutDashboard />} text="Dashboard" isOpen={isOpen} />
-            <SidebarItem to="/markets" icon={<ChartLine />} text="Markets" isOpen={isOpen} />
-            <SidebarItem to="/portfolio" icon={<Briefcase />} text="Portfolio" isOpen={isOpen} />
-            <SidebarItem to="/wallet" icon={<Wallet />} text="Wallet" isOpen={isOpen} />
-            <SidebarItem to="/profile" icon={<User />} text="Profile" isOpen={isOpen} />
-            <SidebarItem to="/settings" icon={<Settings />} text="Settings" isOpen={isOpen} />
+            <SidebarItem to="/dashboard" icon={<LayoutDashboard />} text="Dashboard" isOpen={isOpen} isActive={location.pathname === "/dashboard"} />
+            <SidebarItem to="/trading" icon={<ChartLine />} text="Trading" isOpen={isOpen} isActive={location.pathname === "/trading"} />
+            <SidebarItem to="/portfolio" icon={<Briefcase />} text="Portfolio" isOpen={isOpen} isActive={location.pathname === "/portfolio"} />
+            <SidebarItem to="/wallet" icon={<Wallet />} text="Wallet" isOpen={isOpen} isActive={location.pathname === "/wallet"} />
+            <SidebarItem to="/profile" icon={<User />} text="Profile" isOpen={isOpen} isActive={location.pathname === "/profile"} />
+            <SidebarItem to="/settings" icon={<Settings />} text="Settings" isOpen={isOpen} isActive={location.pathname === "/settings"} />
           </nav>
         </div>
       </aside>
@@ -88,18 +91,22 @@ interface SidebarItemProps {
   icon: React.ReactNode;
   text: string;
   isOpen: boolean;
+  isActive: boolean;
 }
 
-const SidebarItem = ({ to, icon, text, isOpen }: SidebarItemProps) => {
+const SidebarItem = ({ to, icon, text, isOpen, isActive }: SidebarItemProps) => {
   return (
     <Link
       to={to}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-primary/10 transition-all",
+        "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all",
+        isActive 
+          ? "bg-primary/20 text-primary" 
+          : "hover:bg-primary/10 text-foreground",
         !isOpen && "justify-center md:px-0"
       )}
     >
-      <span className="text-primary">{icon}</span>
+      <span className={isActive ? "text-primary" : ""}>{icon}</span>
       {isOpen && <span>{text}</span>}
     </Link>
   );

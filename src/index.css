@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* Dark theme by default - Citadel inspired */
+    /* Dark theme with wealth/green accent */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
@@ -15,7 +15,7 @@
     --popover: 240 10% 4%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 262 83% 58%;
+    --primary: 142 100% 39%;  /* Green color for wealth theme */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 5% 15%;
@@ -24,7 +24,7 @@
     --muted: 240 6% 17%;
     --muted-foreground: 240 5% 75%;
 
-    --accent: 262 83% 58%;
+    --accent: 51 100% 50%;  /* Gold accent color */
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84% 60%;

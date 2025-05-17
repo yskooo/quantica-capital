@@ -11,6 +11,7 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/dashboard/Index";
 import Portfolio from "./pages/dashboard/Portfolio";
 import Profile from "./pages/dashboard/Profile";
+import Trading from "./pages/dashboard/Trading";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/trading" element={<Trading />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
