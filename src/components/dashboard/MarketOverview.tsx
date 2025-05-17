@@ -3,24 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, AreaChart, Area } from "recharts";
+import TradingViewWidget from "@/components/trading/TradingViewWidget";
 
-// Mock chart data
-const marketData = [
-  { name: "Jan", value: 400 },
-  { name: "Feb", value: 300 },
-  { name: "Mar", value: 600 },
-  { name: "Apr", value: 800 },
-  { name: "May", value: 700 },
-  { name: "Jun", value: 900 },
-  { name: "Jul", value: 1100 },
-  { name: "Aug", value: 1200 },
-  { name: "Sep", value: 1000 },
-  { name: "Oct", value: 1300 },
-  { name: "Nov", value: 1500 },
-  { name: "Dec", value: 1700 },
-];
-
+// Mock market overview data
 const marketOverviewIndices = [
   { name: "S&P 500", value: "4,591.97", change: "+0.28%" },
   { name: "Nasdaq", value: "14,373.22", change: "+0.43%" },
@@ -35,13 +20,40 @@ const marketOverviewCurrencies = [
   { name: "USD/CAD", value: "1.3341", change: "-0.02%" },
 ];
 
+const cryptoCurrencies = [
+  { name: "BTC/USD", value: "38,245.60", change: "+1.28%" },
+  { name: "ETH/USD", value: "2,187.34", change: "+0.87%" },
+  { name: "SOL/USD", value: "104.56", change: "-2.31%" },
+  { name: "XRP/USD", value: "0.5921", change: "+0.15%" },
+];
+
 const MarketOverview = () => {
   const [timeframe, setTimeframe] = useState("1D");
+  const [marketTab, setMarketTab] = useState("index");
+  const [symbol, setSymbol] = useState("SPY");
+
+  const handleTabChange = (value: string) => {
+    setMarketTab(value);
+    // Update symbol based on tab
+    switch (value) {
+      case "index":
+        setSymbol("SPY");
+        break;
+      case "forex":
+        setSymbol("USDJPY");
+        break;
+      case "crypto":
+        setSymbol("BTCUSD");
+        break;
+      default:
+        setSymbol("SPY");
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-        <Tabs defaultValue="index" className="w-full md:w-auto">
+        <Tabs value={marketTab} onValueChange={handleTabChange} className="w-full md:w-auto">
           <TabsList className="w-full md:w-auto">
             <TabsTrigger value="index">Indices</TabsTrigger>
             <TabsTrigger value="forex">Currencies</TabsTrigger>
@@ -64,51 +76,20 @@ const MarketOverview = () => {
         </div>
       </div>
 
-      <div className="chart-container h-64 md:h-80">
-        <p className="text-sm text-muted-foreground mb-2">S&P 500 - {timeframe}</p>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={marketData}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#8B5CF6" 
-              fillOpacity={1} 
-              fill="url(#colorValue)" 
-            />
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis 
-              dataKey="name" 
-              stroke="rgba(255,255,255,0.5)" 
-              fontSize={12}
-              tickLine={false}
-            />
-            <YAxis 
-              stroke="rgba(255,255,255,0.5)" 
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value) => `${value}`} 
-            />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(22, 22, 26, 0.9)',
-                borderColor: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '0.5rem',
-                color: 'white'
-              }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      {/* TradingView Chart */}
+      <div className="chart-container h-64 md:h-[300px]">
+        <div className="text-sm text-muted-foreground mb-2 flex items-center justify-between">
+          <span>{marketTab === "index" ? "S&P 500" : marketTab === "forex" ? "USD/JPY" : "BTC/USD"} - {timeframe}</span>
+          <span className="text-xs font-mono">Powered by TradingView</span>
+        </div>
+        <TradingViewWidget symbol={symbol} height={240} />
       </div>
 
+      {/* Market Data Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {marketOverviewIndices.map((index, i) => (
+        {(marketTab === "index" ? marketOverviewIndices : 
+          marketTab === "forex" ? marketOverviewCurrencies : 
+          cryptoCurrencies).map((index, i) => (
           <Card key={i} className="glass-card">
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{index.name}</p>
@@ -119,12 +100,6 @@ const MarketOverview = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium">Note:</span> Full TradingView charts integration will be available in the next update
-        </p>
       </div>
     </div>
   );
