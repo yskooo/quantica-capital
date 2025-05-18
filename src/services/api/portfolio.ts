@@ -9,6 +9,8 @@ export const portfolioService = {
   getPerformance: (timeframe: string) => 
     apiRequest<PerformanceData>(`portfolio/performance?timeframe=${timeframe}`),
     
+  getTransactions: () => apiRequest<Transaction[]>('portfolio/transactions'),
+  
   addTransaction: (transaction: Transaction) => 
     apiRequest<Transaction>('portfolio/transactions', 'POST', transaction),
 };

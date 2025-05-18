@@ -8,6 +8,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import PortfolioSummary from "@/components/dashboard/PortfolioSummary";
+import TransactionHistory from "@/components/portfolio/TransactionHistory";
+import PerformanceMetrics from "@/components/portfolio/PerformanceMetrics";
 import TradeConfirmations from "@/components/reporting/TradeConfirmations";
 import PnLStatements from "@/components/reporting/PnLStatements";
 import DisputeResolution from "@/components/support/DisputeResolution";
@@ -138,19 +140,11 @@ const Portfolio = () => {
               </TabsContent>
               
               <TabsContent value="transactions" className="mt-4">
-                <Card className="glass-card">
-                  <CardContent className="p-6">
-                    <p className="text-center text-muted-foreground">Transaction history will be available soon</p>
-                  </CardContent>
-                </Card>
+                <TransactionHistory />
               </TabsContent>
               
               <TabsContent value="performance" className="mt-4">
-                <Card className="glass-card">
-                  <CardContent className="p-6">
-                    <p className="text-center text-muted-foreground">Performance metrics will be available soon</p>
-                  </CardContent>
-                </Card>
+                <PerformanceMetrics />
               </TabsContent>
               
               <TabsContent value="reporting" className="mt-4">
