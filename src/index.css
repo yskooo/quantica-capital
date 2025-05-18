@@ -47,10 +47,12 @@
   
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
   }
   
   body {
     @apply bg-background text-foreground antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   .font-mono {
@@ -107,6 +109,11 @@
   animation: pulse-glow 2s infinite ease-in-out;
 }
 
+/* Enhanced focus styles for accessibility */
+.focus-ring:focus {
+  @apply ring-2 ring-primary ring-offset-2 ring-offset-background outline-none;
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
@@ -129,3 +136,19 @@
 .number-display {
   @apply font-mono text-xl font-bold;
 }
+
+/* Form styling enhancements */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: hsl(var(--foreground));
+  -webkit-box-shadow: 0 0 0px 1000px hsl(var(--input)) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
