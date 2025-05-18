@@ -58,10 +58,16 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
   });
 
   function onSubmit(data: BankFormValues) {
-    onNext({
-      ...data,
+    // Ensure all required properties are provided before calling onNext
+    const bankDetails: BankDetails = {
+      bankAccNo: data.bankAccNo,
+      bankAccName: data.bankAccName,
       bankAccDateOfOpening: data.bankAccDateOfOpening.toISOString(),
-    });
+      bankName: data.bankName,
+      branch: data.branch,
+    };
+    
+    onNext(bankDetails);
   }
 
   return (

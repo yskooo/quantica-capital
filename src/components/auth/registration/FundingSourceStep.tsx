@@ -53,7 +53,17 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
   });
 
   function onSubmit(data: FundingFormValues) {
-    onNext(data);
+    // Ensure all required properties are provided before calling onNext
+    const fundingSource: Omit<SourceOfFunding, "fundingId"> = {
+      natureOfWork: data.natureOfWork,
+      businessNameOrEducInstitution: data.businessNameOrEducInstitution,
+      officeSchoolAddress: data.officeSchoolAddress,
+      companySchoolNumber: data.companySchoolNumber,
+      validId: data.validId,
+      sourceOfIncome: data.sourceOfIncome,
+    };
+    
+    onNext(fundingSource);
   }
 
   return (

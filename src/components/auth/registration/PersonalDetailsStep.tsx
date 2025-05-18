@@ -67,11 +67,19 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
   });
 
   function onSubmit(data: PersonalFormValues) {
-    onNext({ 
-      ...data,
+    // Ensure all required properties are provided before calling onNext
+    const personalData: Omit<PersonalData, "fundingId" | "bankAccNo" | "accId"> = { 
+      name: data.name,
+      address: data.address,
+      postalCode: data.postalCode,
+      cellNo: data.cellNo,
       email: defaultValues?.email || "",
-      dateOfBirth: data.dateOfBirth.toISOString()
-    });
+      dateOfBirth: data.dateOfBirth.toISOString(),
+      employmentStatus: data.employmentStatus,
+      purposeOfOpening: data.purposeOfOpening
+    };
+    
+    onNext(personalData);
   }
 
   return (
