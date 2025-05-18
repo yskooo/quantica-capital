@@ -56,7 +56,7 @@ const BankAccountSelector = () => {
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0">
           <Command>
-            <CommandInput placeholder="Search bank accounts..." className="h-9" />
+            <CommandInput placeholder="Search bank accounts..." />
             <CommandEmpty>No bank accounts found.</CommandEmpty>
             <CommandGroup>
               {bankAccounts.map((bank) => (
@@ -67,18 +67,19 @@ const BankAccountSelector = () => {
                     setSelectedBank(bank);
                     setOpen(false);
                   }}
-                  className="flex items-center justify-between"
                 >
-                  <div className="flex items-center">
-                    <CreditCard className="mr-2 h-4 w-4 shrink-0 opacity-70" />
-                    <span>{bank.name} - {bank.accountNumber}</span>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <CreditCard className="mr-2 h-4 w-4 shrink-0 opacity-70" />
+                      <span>{bank.name} - {bank.accountNumber}</span>
+                    </div>
+                    <Check
+                      className={cn(
+                        "h-4 w-4",
+                        selectedBank.id === bank.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
                   </div>
-                  <Check
-                    className={cn(
-                      "h-4 w-4",
-                      selectedBank.id === bank.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
                 </CommandItem>
               ))}
             </CommandGroup>
