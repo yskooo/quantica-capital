@@ -3,11 +3,18 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ChartLine, ArrowDown, ArrowUp } from "lucide-react";
+import { ChartLine, ArrowDown, ArrowUp, FileText, Shield } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import PortfolioSummary from "@/components/dashboard/PortfolioSummary";
+import TradeConfirmations from "@/components/reporting/TradeConfirmations";
+import PnLStatements from "@/components/reporting/PnLStatements";
+import DisputeResolution from "@/components/support/DisputeResolution";
+import ComplianceAudits from "@/components/support/ComplianceAudits";
+import { useQuery } from "@tanstack/react-query";
+import { portfolioService } from "@/services/api";
+import { toast } from "sonner";
 
 // Mock data for the portfolio page
 const positions = [
@@ -79,7 +86,16 @@ const Portfolio = () => {
                 <TabsTrigger value="positions">Positions</TabsTrigger>
                 <TabsTrigger value="transactions">Transactions</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
+                <TabsTrigger value="reporting">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Reporting
+                </TabsTrigger>
+                <TabsTrigger value="compliance">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Support & Compliance
+                </TabsTrigger>
               </TabsList>
+              
               <TabsContent value="positions" className="mt-4">
                 <Card className="glass-card">
                   <CardContent className="p-0">
@@ -120,6 +136,7 @@ const Portfolio = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+              
               <TabsContent value="transactions" className="mt-4">
                 <Card className="glass-card">
                   <CardContent className="p-6">
@@ -127,12 +144,27 @@ const Portfolio = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+              
               <TabsContent value="performance" className="mt-4">
                 <Card className="glass-card">
                   <CardContent className="p-6">
                     <p className="text-center text-muted-foreground">Performance metrics will be available soon</p>
                   </CardContent>
                 </Card>
+              </TabsContent>
+              
+              <TabsContent value="reporting" className="mt-4">
+                <div className="grid gap-4">
+                  <TradeConfirmations />
+                  <PnLStatements />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="compliance" className="mt-4">
+                <div className="grid gap-4">
+                  <DisputeResolution />
+                  <ComplianceAudits />
+                </div>
               </TabsContent>
             </Tabs>
           </div>

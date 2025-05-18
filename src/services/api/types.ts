@@ -164,3 +164,127 @@ export interface BranchOption {
   address: string;
   code: string;
 }
+
+// Trade confirmation types
+export interface TradeConfirmation {
+  id: string;
+  tradeId: string;
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  quantity: number;
+  price: number;
+  fees: number;
+  total: number;
+  executionTime: string;
+  settlementDate: string;
+  status: 'PENDING' | 'SETTLED' | 'FAILED';
+  broker: string;
+  accountId: string;
+  downloadUrl?: string;
+}
+
+// PnL statement types
+export interface PnLStatement {
+  id: string;
+  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY';
+  startDate: string;
+  endDate: string;
+  totalPnL: number;
+  realizedPnL: number;
+  unrealizedPnL: number;
+  trades: number;
+  fees: number;
+  tax: number;
+  generatedAt: string;
+  status: 'GENERATED' | 'PENDING' | 'PROCESSING';
+  downloadUrl?: string;
+}
+
+// Custom report request
+export interface ReportRequest {
+  type: 'TRANSACTION_HISTORY' | 'PERFORMANCE_ANALYSIS' | 'TAX_REPORT' | 'PORTFOLIO_VALUATION';
+  startDate: string;
+  endDate: string;
+  format: 'PDF' | 'CSV' | 'EXCEL';
+  includeDetails: boolean;
+  symbols?: string[];
+  customNotes?: string;
+}
+
+// Dispute resolution types
+export interface DisputeRequest {
+  type: 'TRADE_ERROR' | 'FEE_DISPUTE' | 'UNAUTHORIZED_TRANSACTION' | 'SYSTEM_ERROR' | 'OTHER';
+  relatedId?: string;
+  description: string;
+  requestedResolution: string;
+  attachments?: string[];
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+}
+
+export interface DisputeResponse extends DisputeRequest {
+  id: string;
+  status: 'SUBMITTED' | 'UNDER_REVIEW' | 'RESOLVED' | 'REJECTED' | 'MORE_INFO_NEEDED';
+  submittedAt: string;
+  updatedAt: string;
+  resolutionDetails?: string;
+  assignedTo?: string;
+  expectedResolutionDate?: string;
+  comments?: DisputeComment[];
+}
+
+export interface DisputeComment {
+  id: string;
+  disputeId: string;
+  authorId: string;
+  authorType: 'CLIENT' | 'SUPPORT' | 'COMPLIANCE';
+  content: string;
+  timestamp: string;
+  attachments?: string[];
+}
+
+// Compliance audit types
+export interface AuditRequest {
+  startDate: string;
+  endDate: string;
+  type: 'ACCOUNT_ACTIVITY' | 'TRADING_PATTERN' | 'TAX_COMPLIANCE' | 'KYC_VERIFICATION';
+  description?: string;
+}
+
+export interface AuditReport {
+  id: string;
+  requestId: string;
+  status: 'REQUESTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  requestedAt: string;
+  completedAt?: string;
+  findings?: string;
+  recommendations?: string;
+  compliance: 'COMPLIANT' | 'NON_COMPLIANT' | 'PARTIALLY_COMPLIANT' | 'PENDING';
+  auditor?: string;
+  attachments?: string[];
+  downloadUrl?: string;
+}
+
+// Support ticket types
+export interface SupportTicket {
+  id: string;
+  subject: string;
+  description: string;
+  category: 'ACCOUNT' | 'TRADING' | 'TECHNICAL' | 'BILLING' | 'GENERAL';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  status: 'OPEN' | 'IN_PROGRESS' | 'WAITING_ON_CLIENT' | 'RESOLVED' | 'CLOSED';
+  createdAt: string;
+  updatedAt: string;
+  assignedTo?: string;
+  attachments?: string[];
+  responses?: SupportResponse[];
+}
+
+export interface SupportResponse {
+  id: string;
+  ticketId: string;
+  authorId: string;
+  authorType: 'CLIENT' | 'SUPPORT';
+  content: string;
+  timestamp: string;
+  attachments?: string[];
+}
