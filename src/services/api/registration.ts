@@ -1,20 +1,35 @@
 
-// Registration API endpoints and methods
-import { apiRequest } from './core';
-import { ApplicationStatus } from './types';
+// Registration API service for MySQL database
+import { authAPI } from './core';
 import { RegistrationData } from '@/types/models';
 
 export const registrationService = {
-  submitApplication: (data: RegistrationData) => 
-    apiRequest<{ applicationId: string }>('registration/submit', 'POST', data),
+  register: async (registrationData: RegistrationData) => {
+    console.log("Registering user with data:", registrationData);
     
-  getApplicationStatus: (applicationId: string) => 
-    apiRequest<ApplicationStatus>(`registration/status/${applicationId}`, 'GET'),
-    
-  uploadDocument: (applicationId: string, documentType: string, file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    // Custom implementation for file upload
-    return apiRequest<{ documentId: string }>(`registration/documents/${applicationId}/${documentType}`, 'POST', formData);
+    try {
+      const response = await authAPI.register(registrationData);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw error;
+    }
   },
+  
+  // Validate email availability
+  checkEmailAvailability: async (email: string) => {
+    try {
+      // This would be implemented when backend is ready
+      console.log("Checking email availability for:", email);
+      return { available: true };
+    } catch (error) {
+      console.error("Email check error:", error);
+      return { available: false };
+    }
+  }
 };

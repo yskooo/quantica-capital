@@ -17,7 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 
 const accountSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
+  email: z.string()
+    .email({ message: "Please enter a valid email address." })
+    .max(60, { message: "Email cannot exceed 60 characters." }),
   password: z.string()
     .min(8, { message: "Password must be at least 8 characters." })
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
@@ -49,6 +51,7 @@ export function AccountStep({ onNext, defaultValues }: AccountStepProps) {
   });
 
   function onSubmit(data: AccountFormValues) {
+    console.log("Account step data:", { email: data.email });
     onNext({ 
       email: data.email, 
       password: data.password 
@@ -63,12 +66,13 @@ export function AccountStep({ onNext, defaultValues }: AccountStepProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Email (P_Email)</FormLabel>
               <FormControl>
                 <Input 
                   placeholder="name@example.com" 
                   type="email" 
                   autoComplete="email"
+                  maxLength={60}
                   {...field} 
                 />
               </FormControl>

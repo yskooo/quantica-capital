@@ -1,24 +1,59 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, LogIn } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { authAPI } from "@/services/api/core";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here we would connect to the backend
-    console.log("Login attempt with:", { email });
-    // For now we just log the attempt
+    setIsLoading(true);
+    
+    try {
+      console.log("Attempting login with:", { email });
+      
+      const response = await authAPI.login({ email, password });
+      
+      if (response.error) {
+        toast.error(response.error);
+        return;
+      }
+      
+      if (response.data) {
+        // Store token if provided
+        if (response.data.token) {
+          localStorage.setItem('auth_token', response.data.token);
+        }
+        
+        // Store user data
+        if (response.data.user) {
+          localStorage.setItem('user_data', JSON.stringify(response.data.user));
+        }
+        
+        toast.success(response.message || "Login successful!");
+        navigate("/dashboard");
+      } else {
+        toast.error("Invalid login response");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("An error occurred during login");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,6 +78,7 @@ const Login = () => {
                   required 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -61,6 +97,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pr-10"
+                    disabled={isLoading}
                   />
                   <Button 
                     type="button"
@@ -68,6 +105,7 @@ const Login = () => {
                     size="icon" 
                     className="absolute right-0 top-0 h-full"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
@@ -75,9 +113,9 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 <LogIn className="mr-2 h-4 w-4" />
-                Sign In
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
               <div className="text-center text-sm">
                 Don't have an account?{" "}
