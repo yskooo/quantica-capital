@@ -33,21 +33,21 @@ import { cn } from "@/lib/utils";
 import { PersonalData } from "@/types/models";
 
 const personalSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  address: z.string().min(5, { message: "Please enter your full address." }),
-  postalCode: z.string().min(3, { message: "Please enter a valid postal code." }),
-  cellNo: z.string().min(10, { message: "Please enter a valid phone number." }),
-  dateOfBirth: z.date({
+  P_Name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  P_Address: z.string().min(5, { message: "Please enter your full address." }),
+  P_Postal_Code: z.string().min(3, { message: "Please enter a valid postal code." }),
+  P_Cell_Number: z.string().min(10, { message: "Please enter a valid phone number." }),
+  Date_of_Birth: z.date({
     required_error: "Please select your date of birth.",
   }),
-  employmentStatus: z.enum(['Employed', 'Unemployed', 'Self-employed', 'Student', 'Retired']),
-  purposeOfOpening: z.enum(['Savings', 'Investment', 'Business', 'Personal Use', 'Others']),
+  Employment_Status: z.enum(['Employed', 'Unemployed', 'Self-Employed', 'Student', 'Retired']),
+  Purpose_of_Opening: z.enum(['Savings', 'Investment', 'Business', 'Personal Use', 'Others']),
 });
 
 type PersonalFormValues = z.infer<typeof personalSchema>;
 
 interface PersonalDetailsStepProps {
-  onNext: (data: Omit<PersonalData, "fundingId" | "bankAccNo" | "accId">) => void;
+  onNext: (data: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID">) => void;
   onBack: () => void;
   defaultValues?: Partial<PersonalData>;
 }
@@ -56,27 +56,27 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
   const form = useForm<PersonalFormValues>({
     resolver: zodResolver(personalSchema),
     defaultValues: {
-      name: defaultValues?.name || "",
-      address: defaultValues?.address || "",
-      postalCode: defaultValues?.postalCode || "",
-      cellNo: defaultValues?.cellNo || "",
-      dateOfBirth: defaultValues?.dateOfBirth ? new Date(defaultValues.dateOfBirth) : undefined,
-      employmentStatus: (defaultValues?.employmentStatus as any) || "Employed",
-      purposeOfOpening: (defaultValues?.purposeOfOpening as any) || "Savings",
+      P_Name: defaultValues?.P_Name || "",
+      P_Address: defaultValues?.P_Address || "",
+      P_Postal_Code: defaultValues?.P_Postal_Code || "",
+      P_Cell_Number: defaultValues?.P_Cell_Number?.toString() || "",
+      Date_of_Birth: defaultValues?.Date_of_Birth ? new Date(defaultValues.Date_of_Birth) : undefined,
+      Employment_Status: (defaultValues?.Employment_Status as any) || "Employed",
+      Purpose_of_Opening: (defaultValues?.Purpose_of_Opening as any) || "Savings",
     },
   });
 
   function onSubmit(data: PersonalFormValues) {
     // Ensure all required properties are provided before calling onNext
-    const personalData: Omit<PersonalData, "fundingId" | "bankAccNo" | "accId"> = { 
-      name: data.name,
-      address: data.address,
-      postalCode: data.postalCode,
-      cellNo: data.cellNo,
-      email: defaultValues?.email || "",
-      dateOfBirth: data.dateOfBirth.toISOString(),
-      employmentStatus: data.employmentStatus,
-      purposeOfOpening: data.purposeOfOpening
+    const personalData: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID"> = { 
+      P_Name: data.P_Name,
+      P_Address: data.P_Address,
+      P_Postal_Code: data.P_Postal_Code,
+      P_Cell_Number: parseInt(data.P_Cell_Number),
+      P_Email: defaultValues?.P_Email || "",
+      Date_of_Birth: data.Date_of_Birth.toISOString(),
+      Employment_Status: data.Employment_Status,
+      Purpose_of_Opening: data.Purpose_of_Opening
     };
     
     onNext(personalData);
@@ -87,7 +87,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="name"
+          name="P_Name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Full Name</FormLabel>
@@ -101,7 +101,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
         
         <FormField
           control={form.control}
-          name="address"
+          name="P_Address"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Address</FormLabel>
@@ -115,7 +115,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
         
         <FormField
           control={form.control}
-          name="postalCode"
+          name="P_Postal_Code"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Postal Code</FormLabel>
@@ -129,7 +129,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
         
         <FormField
           control={form.control}
-          name="cellNo"
+          name="P_Cell_Number"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
@@ -143,7 +143,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
         
         <FormField
           control={form.control}
-          name="dateOfBirth"
+          name="Date_of_Birth"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Date of Birth</FormLabel>
@@ -186,7 +186,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="employmentStatus"
+            name="Employment_Status"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Employment Status</FormLabel>
@@ -202,7 +202,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
                   <SelectContent>
                     <SelectItem value="Employed">Employed</SelectItem>
                     <SelectItem value="Unemployed">Unemployed</SelectItem>
-                    <SelectItem value="Self-employed">Self-employed</SelectItem>
+                    <SelectItem value="Self-Employed">Self-Employed</SelectItem>
                     <SelectItem value="Student">Student</SelectItem>
                     <SelectItem value="Retired">Retired</SelectItem>
                   </SelectContent>
@@ -214,7 +214,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
           
           <FormField
             control={form.control}
-            name="purposeOfOpening"
+            name="Purpose_of_Opening"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Purpose of Opening Account</FormLabel>

@@ -25,22 +25,18 @@ import { cn } from "@/lib/utils";
 import { BankDetails } from "@/types/models";
 
 const bankSchema = z.object({
-  bankAccNo: z
-    .string()
-    .min(10, { message: "Bank account number must be at least 10 characters." })
-    .max(19, { message: "Bank account number cannot exceed 19 characters." }),
-  bankAccName: z.string().min(2, { message: "Please enter the account holder name." }),
-  bankAccDateOfOpening: z.date({
+  Bank_Acc_Name: z.string().min(2, { message: "Please enter the account holder name." }),
+  Bank_Acc_Date_of_Opening: z.date({
     required_error: "Please select the account opening date.",
   }),
-  bankName: z.string().min(2, { message: "Please enter the bank name." }),
-  branch: z.string().min(2, { message: "Please enter the branch name." }),
+  Bank_Name: z.string().min(2, { message: "Please enter the bank name." }),
+  Branch: z.string().min(2, { message: "Please enter the branch name." }),
 });
 
 type BankFormValues = z.infer<typeof bankSchema>;
 
 interface BankingDetailsStepProps {
-  onNext: (data: BankDetails) => void;
+  onNext: (data: Omit<BankDetails, 'Bank_Acc_No'>) => void;
   onBack: () => void;
   defaultValues?: Partial<BankDetails>;
 }
@@ -49,22 +45,20 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
   const form = useForm<BankFormValues>({
     resolver: zodResolver(bankSchema),
     defaultValues: {
-      bankAccNo: defaultValues?.bankAccNo || "",
-      bankAccName: defaultValues?.bankAccName || "",
-      bankAccDateOfOpening: defaultValues?.bankAccDateOfOpening ? new Date(defaultValues.bankAccDateOfOpening) : undefined,
-      bankName: defaultValues?.bankName || "",
-      branch: defaultValues?.branch || "",
+      Bank_Acc_Name: defaultValues?.Bank_Acc_Name || "",
+      Bank_Acc_Date_of_Opening: defaultValues?.Bank_Acc_Date_of_Opening ? new Date(defaultValues.Bank_Acc_Date_of_Opening) : undefined,
+      Bank_Name: defaultValues?.Bank_Name || "",
+      Branch: defaultValues?.Branch || "",
     },
   });
 
   function onSubmit(data: BankFormValues) {
     // Ensure all required properties are provided before calling onNext
-    const bankDetails: BankDetails = {
-      bankAccNo: data.bankAccNo,
-      bankAccName: data.bankAccName,
-      bankAccDateOfOpening: data.bankAccDateOfOpening.toISOString(),
-      bankName: data.bankName,
-      branch: data.branch,
+    const bankDetails: Omit<BankDetails, 'Bank_Acc_No'> = {
+      Bank_Acc_Name: data.Bank_Acc_Name,
+      Bank_Acc_Date_of_Opening: data.Bank_Acc_Date_of_Opening.toISOString(),
+      Bank_Name: data.Bank_Name,
+      Branch: data.Branch,
     };
     
     onNext(bankDetails);
@@ -75,21 +69,7 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="bankAccNo"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bank Account Number</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. 123456789012" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="bankAccName"
+          name="Bank_Acc_Name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Account Holder Name</FormLabel>
@@ -103,7 +83,7 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
         
         <FormField
           control={form.control}
-          name="bankAccDateOfOpening"
+          name="Bank_Acc_Date_of_Opening"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Account Opening Date</FormLabel>
@@ -146,7 +126,7 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="bankName"
+            name="Bank_Name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Bank Name</FormLabel>
@@ -160,7 +140,7 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
           
           <FormField
             control={form.control}
-            name="branch"
+            name="Branch"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Branch</FormLabel>

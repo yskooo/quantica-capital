@@ -23,18 +23,18 @@ import {
 import { SourceOfFunding } from "@/types/models";
 
 const fundingSchema = z.object({
-  natureOfWork: z.string().min(2, { message: "Please enter your occupation or nature of work." }),
-  businessNameOrEducInstitution: z.string().min(2, { message: "Please enter your company or school name." }),
-  officeSchoolAddress: z.string().min(5, { message: "Please enter your office or school address." }),
-  companySchoolNumber: z.string().optional(),
-  validId: z.enum(['Driver\'s License', 'Passport', 'SSS ID', 'PhilHealth', 'Other']),
-  sourceOfIncome: z.enum(['Salary', 'Business', 'Remittance', 'Scholarship', 'Allowance']),
+  Nature_of_Work: z.string().min(2, { message: "Please enter your occupation or nature of work." }),
+  'Business/School_Name': z.string().min(2, { message: "Please enter your company or school name." }),
+  'Office/School_Address': z.string().min(5, { message: "Please enter your office or school address." }),
+  'Office/School_Number': z.string().optional(),
+  Valid_ID: z.enum(['Driver\'s License', 'Passport', 'SSS ID', 'PhilHealth ID', 'Others']),
+  Source_of_Income: z.enum(['Salary', 'Business', 'Remittance', 'Scholarship', 'Pension', 'Others']),
 });
 
 type FundingFormValues = z.infer<typeof fundingSchema>;
 
 interface FundingSourceStepProps {
-  onNext: (data: Omit<SourceOfFunding, "fundingId">) => void;
+  onNext: (data: Omit<SourceOfFunding, "Funding_ID">) => void;
   onBack: () => void;
   defaultValues?: Partial<SourceOfFunding>;
 }
@@ -43,24 +43,24 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
   const form = useForm<FundingFormValues>({
     resolver: zodResolver(fundingSchema),
     defaultValues: {
-      natureOfWork: defaultValues?.natureOfWork || "",
-      businessNameOrEducInstitution: defaultValues?.businessNameOrEducInstitution || "",
-      officeSchoolAddress: defaultValues?.officeSchoolAddress || "",
-      companySchoolNumber: defaultValues?.companySchoolNumber || "",
-      validId: (defaultValues?.validId as any) || "Passport",
-      sourceOfIncome: (defaultValues?.sourceOfIncome as any) || "Salary",
+      Nature_of_Work: defaultValues?.Nature_of_Work || "",
+      'Business/School_Name': defaultValues?.['Business/School_Name'] || "",
+      'Office/School_Address': defaultValues?.['Office/School_Address'] || "",
+      'Office/School_Number': defaultValues?.['Office/School_Number'] || "",
+      Valid_ID: (defaultValues?.Valid_ID as any) || "Passport",
+      Source_of_Income: (defaultValues?.Source_of_Income as any) || "Salary",
     },
   });
 
   function onSubmit(data: FundingFormValues) {
     // Ensure all required properties are provided before calling onNext
-    const fundingSource: Omit<SourceOfFunding, "fundingId"> = {
-      natureOfWork: data.natureOfWork,
-      businessNameOrEducInstitution: data.businessNameOrEducInstitution,
-      officeSchoolAddress: data.officeSchoolAddress,
-      companySchoolNumber: data.companySchoolNumber,
-      validId: data.validId,
-      sourceOfIncome: data.sourceOfIncome,
+    const fundingSource: Omit<SourceOfFunding, "Funding_ID"> = {
+      Nature_of_Work: data.Nature_of_Work,
+      'Business/School_Name': data['Business/School_Name'],
+      'Office/School_Address': data['Office/School_Address'],
+      'Office/School_Number': data['Office/School_Number'],
+      Valid_ID: data.Valid_ID,
+      Source_of_Income: data.Source_of_Income,
     };
     
     onNext(fundingSource);
@@ -71,7 +71,7 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="natureOfWork"
+          name="Nature_of_Work"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Occupation / Nature of Work</FormLabel>
@@ -85,7 +85,7 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
         
         <FormField
           control={form.control}
-          name="businessNameOrEducInstitution"
+          name="Business/School_Name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Company Name / Educational Institution</FormLabel>
@@ -99,7 +99,7 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
         
         <FormField
           control={form.control}
-          name="officeSchoolAddress"
+          name="Office/School_Address"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Office / School Address</FormLabel>
@@ -113,7 +113,7 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
         
         <FormField
           control={form.control}
-          name="companySchoolNumber"
+          name="Office/School_Number"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Company / School Contact Number</FormLabel>
@@ -128,7 +128,7 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="validId"
+            name="Valid_ID"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Valid ID Type</FormLabel>
@@ -145,8 +145,8 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
                     <SelectItem value="Driver's License">Driver's License</SelectItem>
                     <SelectItem value="Passport">Passport</SelectItem>
                     <SelectItem value="SSS ID">SSS ID</SelectItem>
-                    <SelectItem value="PhilHealth">PhilHealth</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="PhilHealth ID">PhilHealth ID</SelectItem>
+                    <SelectItem value="Others">Others</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -156,7 +156,7 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
           
           <FormField
             control={form.control}
-            name="sourceOfIncome"
+            name="Source_of_Income"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Primary Source of Income</FormLabel>
@@ -174,7 +174,8 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
                     <SelectItem value="Business">Business</SelectItem>
                     <SelectItem value="Remittance">Remittance</SelectItem>
                     <SelectItem value="Scholarship">Scholarship</SelectItem>
-                    <SelectItem value="Allowance">Allowance</SelectItem>
+                    <SelectItem value="Pension">Pension</SelectItem>
+                    <SelectItem value="Others">Others</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

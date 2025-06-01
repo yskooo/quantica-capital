@@ -49,16 +49,19 @@ export interface RoleOfContact {
   C_Relationship?: 'Father' | 'Mother' | 'Spouse' | 'Son' | 'Daughter' | 'Friend' | 'Colleague' | 'Mentor' | 'Others';
 }
 
+// Add ContactRole type for the registration components
+export interface ContactRole {
+  role: RoleOfContact['C_Role'];
+  relationship?: RoleOfContact['C_Relationship'];
+  contactDetails: Omit<ContactPersonDetails, 'Contact_ID'>;
+}
+
 // Complete registration data structure
 export interface RegistrationData {
   personalData: Omit<PersonalData, 'Acc_ID' | 'Funding_ID' | 'Bank_Acc_No'>;
   bankDetails: Omit<BankDetails, 'Bank_Acc_No'>;
   sourceOfFunding: Omit<SourceOfFunding, 'Funding_ID'>;
-  contacts: Array<{
-    contactDetails: Omit<ContactPersonDetails, 'Contact_ID'>;
-    role: RoleOfContact['C_Role'];
-    relationship: RoleOfContact['C_Relationship'];
-  }>;
+  contacts: Array<ContactRole>;
   credentials: {
     email: string;
     password: string;

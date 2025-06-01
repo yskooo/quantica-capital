@@ -49,35 +49,35 @@ export function ReviewStep({ data, onBack, onSubmit, isSubmitting }: ReviewStepP
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
           <div className="space-y-1">
             <p className="text-muted-foreground">Full Name</p>
-            <p className="font-medium">{data.personalData?.name || "N/A"}</p>
+            <p className="font-medium">{data.personalData?.P_Name || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Email</p>
-            <p className="font-medium">{data.personalData?.email || data.credentials?.email || "N/A"}</p>
+            <p className="font-medium">{data.personalData?.P_Email || data.credentials?.email || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Phone Number</p>
-            <p className="font-medium">{data.personalData?.cellNo || "N/A"}</p>
+            <p className="font-medium">{data.personalData?.P_Cell_Number || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Date of Birth</p>
-            <p className="font-medium">{formatDate(data.personalData?.dateOfBirth)}</p>
+            <p className="font-medium">{formatDate(data.personalData?.Date_of_Birth)}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Address</p>
-            <p className="font-medium">{data.personalData?.address || "N/A"}</p>
+            <p className="font-medium">{data.personalData?.P_Address || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Postal Code</p>
-            <p className="font-medium">{data.personalData?.postalCode || "N/A"}</p>
+            <p className="font-medium">{data.personalData?.P_Postal_Code || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Employment Status</p>
-            <p className="font-medium">{data.personalData?.employmentStatus || "N/A"}</p>
+            <p className="font-medium">{data.personalData?.Employment_Status || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Account Purpose</p>
-            <p className="font-medium">{data.personalData?.purposeOfOpening || "N/A"}</p>
+            <p className="font-medium">{data.personalData?.Purpose_of_Opening || "N/A"}</p>
           </div>
         </CardContent>
       </Card>
@@ -90,27 +90,27 @@ export function ReviewStep({ data, onBack, onSubmit, isSubmitting }: ReviewStepP
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
           <div className="space-y-1">
             <p className="text-muted-foreground">Occupation / Nature of Work</p>
-            <p className="font-medium">{data.fundingSource?.natureOfWork || "N/A"}</p>
+            <p className="font-medium">{data.sourceOfFunding?.Nature_of_Work || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Company / Institution</p>
-            <p className="font-medium">{data.fundingSource?.businessNameOrEducInstitution || "N/A"}</p>
+            <p className="font-medium">{data.sourceOfFunding?.['Business/School_Name'] || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Office / School Address</p>
-            <p className="font-medium">{data.fundingSource?.officeSchoolAddress || "N/A"}</p>
+            <p className="font-medium">{data.sourceOfFunding?.['Office/School_Address'] || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Company / School Number</p>
-            <p className="font-medium">{data.fundingSource?.companySchoolNumber || "N/A"}</p>
+            <p className="font-medium">{data.sourceOfFunding?.['Office/School_Number'] || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Valid ID Type</p>
-            <p className="font-medium">{data.fundingSource?.validId || "N/A"}</p>
+            <p className="font-medium">{data.sourceOfFunding?.Valid_ID || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Source of Income</p>
-            <p className="font-medium">{data.fundingSource?.sourceOfIncome || "N/A"}</p>
+            <p className="font-medium">{data.sourceOfFunding?.Source_of_Income || "N/A"}</p>
           </div>
         </CardContent>
       </Card>
@@ -122,24 +122,20 @@ export function ReviewStep({ data, onBack, onSubmit, isSubmitting }: ReviewStepP
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
           <div className="space-y-1">
-            <p className="text-muted-foreground">Bank Account Number</p>
-            <p className="font-medium">{data.bankDetails?.bankAccNo || "N/A"}</p>
-          </div>
-          <div className="space-y-1">
             <p className="text-muted-foreground">Account Holder Name</p>
-            <p className="font-medium">{data.bankDetails?.bankAccName || "N/A"}</p>
+            <p className="font-medium">{data.bankDetails?.Bank_Acc_Name || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Bank Name</p>
-            <p className="font-medium">{data.bankDetails?.bankName || "N/A"}</p>
+            <p className="font-medium">{data.bankDetails?.Bank_Name || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Branch</p>
-            <p className="font-medium">{data.bankDetails?.branch || "N/A"}</p>
+            <p className="font-medium">{data.bankDetails?.Branch || "N/A"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-muted-foreground">Account Opening Date</p>
-            <p className="font-medium">{formatDate(data.bankDetails?.bankAccDateOfOpening)}</p>
+            <p className="font-medium">{formatDate(data.bankDetails?.Bank_Acc_Date_of_Opening)}</p>
           </div>
         </CardContent>
       </Card>
@@ -155,7 +151,7 @@ export function ReviewStep({ data, onBack, onSubmit, isSubmitting }: ReviewStepP
               <div key={index} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium flex items-center">
-                    {contact.contactDetails.name} 
+                    {contact.contactDetails.C_Name} 
                     <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
                       {contact.role}
                     </span>
@@ -163,7 +159,7 @@ export function ReviewStep({ data, onBack, onSubmit, isSubmitting }: ReviewStepP
                   <span className="text-sm text-muted-foreground">{contact.relationship}</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {contact.contactDetails.email} • {contact.contactDetails.contactNumber}
+                  {contact.contactDetails.C_Email} • {contact.contactDetails.C_Contact_Number}
                 </div>
                 {index < data.contacts.length - 1 && <Separator className="my-2" />}
               </div>

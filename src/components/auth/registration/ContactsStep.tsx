@@ -45,13 +45,13 @@ import { ContactRole } from "@/types/models";
 import { Badge } from "@/components/ui/badge";
 
 const contactSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  address: z.string().min(5, { message: "Please enter the full address." }),
-  postalCode: z.string().min(3, { message: "Please enter a valid postal code." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  contactNumber: z.string().min(10, { message: "Please enter a valid phone number." }),
+  C_Name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  C_Address: z.string().min(5, { message: "Please enter the full address." }),
+  C_Postal_Code: z.string().min(3, { message: "Please enter a valid postal code." }),
+  C_Email: z.string().email({ message: "Please enter a valid email address." }),
+  C_Contact_Number: z.string().min(10, { message: "Please enter a valid phone number." }),
   role: z.enum(['Kin', 'Referee 1', 'Referee 2']),
-  relationship: z.enum(['Father', 'Mother', 'Sibling', 'Spouse', 'Daughter', 'Son', 'Friend', 'Colleague', 'Other']),
+  relationship: z.enum(['Father', 'Mother', 'Spouse', 'Son', 'Daughter', 'Friend', 'Colleague', 'Mentor', 'Others']),
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
@@ -70,11 +70,11 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      name: "",
-      address: "",
-      postalCode: "",
-      email: "",
-      contactNumber: "",
+      C_Name: "",
+      C_Address: "",
+      C_Postal_Code: "",
+      C_Email: "",
+      C_Contact_Number: "",
       role: "Kin", // Default role
       relationship: "Friend", // Default relationship
     },
@@ -83,11 +83,11 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
   const editContact = (index: number) => {
     const contact = contacts[index];
     form.reset({
-      name: contact.contactDetails.name,
-      address: contact.contactDetails.address,
-      postalCode: contact.contactDetails.postalCode,
-      email: contact.contactDetails.email,
-      contactNumber: contact.contactDetails.contactNumber,
+      C_Name: contact.contactDetails.C_Name,
+      C_Address: contact.contactDetails.C_Address,
+      C_Postal_Code: contact.contactDetails.C_Postal_Code,
+      C_Email: contact.contactDetails.C_Email,
+      C_Contact_Number: contact.contactDetails.C_Contact_Number,
       role: contact.role,
       relationship: contact.relationship,
     });
@@ -109,11 +109,11 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
       role: data.role,
       relationship: data.relationship,
       contactDetails: {
-        name: data.name,
-        address: data.address,
-        postalCode: data.postalCode,
-        email: data.email,
-        contactNumber: data.contactNumber,
+        C_Name: data.C_Name,
+        C_Address: data.C_Address,
+        C_Postal_Code: data.C_Postal_Code,
+        C_Email: data.C_Email,
+        C_Contact_Number: data.C_Contact_Number,
       }
     };
 
@@ -144,18 +144,18 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
               <Card key={index} className="bg-card/50">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{contact.contactDetails.name}</CardTitle>
+                    <CardTitle className="text-lg">{contact.contactDetails.C_Name}</CardTitle>
                     <Badge variant="outline" className="font-medium">
                       {contact.role}
                     </Badge>
                   </div>
                   <CardDescription>
-                    {contact.relationship} • {contact.contactDetails.email}
+                    {contact.relationship} • {contact.contactDetails.C_Email}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground pb-2">
-                  <p>{contact.contactDetails.address}</p>
-                  <p>{contact.contactDetails.contactNumber}</p>
+                  <p>{contact.contactDetails.C_Address}</p>
+                  <p>{contact.contactDetails.C_Contact_Number}</p>
                 </CardContent>
                 <CardFooter className="pt-0 flex justify-end gap-2">
                   <Button 
@@ -178,7 +178,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                       <AlertDialogHeader>
                         <AlertDialogTitle>Remove Contact</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to remove {contact.contactDetails.name} from your contacts? This action cannot be undone.
+                          Are you sure you want to remove {contact.contactDetails.C_Name} from your contacts? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -255,13 +255,13 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                           <SelectContent>
                             <SelectItem value="Father">Father</SelectItem>
                             <SelectItem value="Mother">Mother</SelectItem>
-                            <SelectItem value="Sibling">Sibling</SelectItem>
                             <SelectItem value="Spouse">Spouse</SelectItem>
-                            <SelectItem value="Daughter">Daughter</SelectItem>
                             <SelectItem value="Son">Son</SelectItem>
+                            <SelectItem value="Daughter">Daughter</SelectItem>
                             <SelectItem value="Friend">Friend</SelectItem>
                             <SelectItem value="Colleague">Colleague</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
+                            <SelectItem value="Mentor">Mentor</SelectItem>
+                            <SelectItem value="Others">Others</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -272,7 +272,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                 
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="C_Name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Full Name</FormLabel>
@@ -286,7 +286,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                 
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="C_Email"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email</FormLabel>
@@ -300,7 +300,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                 
                 <FormField
                   control={form.control}
-                  name="contactNumber"
+                  name="C_Contact_Number"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Phone Number</FormLabel>
@@ -314,7 +314,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                 
                 <FormField
                   control={form.control}
-                  name="address"
+                  name="C_Address"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Address</FormLabel>
@@ -328,7 +328,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                 
                 <FormField
                   control={form.control}
-                  name="postalCode"
+                  name="C_Postal_Code"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Postal Code</FormLabel>

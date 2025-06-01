@@ -28,7 +28,7 @@ const Register = () => {
       password: ""
     },
     personalData: {} as PersonalData,
-    fundingSource: {} as SourceOfFunding,
+    sourceOfFunding: {} as SourceOfFunding,
     bankDetails: {} as BankDetails,
     contacts: [] as ContactRole[]
   });
@@ -40,14 +40,14 @@ const Register = () => {
       credentials: data,
       personalData: {
         ...prev.personalData,
-        email: data.email
+        P_Email: data.email
       }
     }));
     setCurrentStep(1);
   };
 
   // Handle personal details
-  const handlePersonalDetailsSubmit = (data: Omit<PersonalData, "fundingId" | "bankAccNo" | "accId">) => {
+  const handlePersonalDetailsSubmit = (data: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID">) => {
     setFormData(prev => ({
       ...prev,
       personalData: {
@@ -59,11 +59,11 @@ const Register = () => {
   };
 
   // Handle funding source
-  const handleFundingSourceSubmit = (data: Omit<SourceOfFunding, "fundingId">) => {
+  const handleFundingSourceSubmit = (data: Omit<SourceOfFunding, "Funding_ID">) => {
     setFormData(prev => ({
       ...prev,
-      fundingSource: {
-        ...prev.fundingSource as SourceOfFunding,
+      sourceOfFunding: {
+        ...prev.sourceOfFunding as SourceOfFunding,
         ...data
       }
     }));
@@ -71,14 +71,10 @@ const Register = () => {
   };
 
   // Handle banking details
-  const handleBankingDetailsSubmit = (data: BankDetails) => {
+  const handleBankingDetailsSubmit = (data: Omit<BankDetails, 'Bank_Acc_No'>) => {
     setFormData(prev => ({
       ...prev,
-      bankDetails: data,
-      personalData: {
-        ...prev.personalData as PersonalData,
-        bankAccNo: data.bankAccNo
-      }
+      bankDetails: data
     }));
     setCurrentStep(4);
   };
@@ -187,7 +183,7 @@ const Register = () => {
                   <FundingSourceStep 
                     onNext={handleFundingSourceSubmit}
                     onBack={() => setCurrentStep(1)}
-                    defaultValues={formData.fundingSource}
+                    defaultValues={formData.sourceOfFunding}
                   />
                 </div>
               )}

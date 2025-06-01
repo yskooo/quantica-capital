@@ -39,20 +39,19 @@ export function RegistrationStepper({
                !!formData.credentials?.password && 
                formData.credentials.password.length >= 8;
       case 'personal':
-        return !!formData.personalData?.name && 
-               !!formData.personalData?.address && 
-               !!formData.personalData?.email && 
-               !!formData.personalData?.cellNo && 
-               !!formData.personalData?.dateOfBirth;
+        return !!formData.personalData?.P_Name && 
+               !!formData.personalData?.P_Address && 
+               !!formData.personalData?.P_Email && 
+               !!formData.personalData?.P_Cell_Number && 
+               !!formData.personalData?.Date_of_Birth;
       case 'funding':
-        return !!formData.fundingSource?.natureOfWork && 
-               !!formData.fundingSource?.sourceOfIncome;
+        return !!formData.sourceOfFunding?.Nature_of_Work && 
+               !!formData.sourceOfFunding?.Source_of_Income;
       case 'banking':
-        return !!formData.bankDetails?.bankAccNo && 
-               !!formData.bankDetails?.bankName;
+        return !!formData.bankDetails?.Bank_Name;
       case 'contacts':
         return formData.contacts && formData.contacts.length > 0 && 
-               formData.contacts.some(c => c.role === 'Kin' && !!c.contactDetails?.name);
+               formData.contacts.some(c => c.role === 'Kin' && !!c.contactDetails?.C_Name);
       case 'review':
         // Review is a final check, not a data entry step
         return false;
