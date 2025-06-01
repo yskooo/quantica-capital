@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -105,13 +104,13 @@ const Register = () => {
         return;
       }
       
-      // Store token if provided
-      if (response.data?.token) {
-        localStorage.setItem('auth_token', response.data.token);
+      // Store token if provided with proper type checking
+      if (response.data && typeof response.data === 'object' && 'token' in response.data) {
+        localStorage.setItem('auth_token', response.data.token as string);
       }
       
-      // Store user data if provided
-      if (response.data?.user) {
+      // Store user data if provided with proper type checking
+      if (response.data && typeof response.data === 'object' && 'user' in response.data) {
         localStorage.setItem('user_data', JSON.stringify(response.data.user));
       }
       
