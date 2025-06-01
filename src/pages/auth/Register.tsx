@@ -15,6 +15,7 @@ import { BankingDetailsStep } from "@/components/auth/registration/BankingDetail
 import { ContactsStep } from "@/components/auth/registration/ContactsStep";
 import { ReviewStep } from "@/components/auth/registration/ReviewStep";
 import { RegistrationData, PersonalData, SourceOfFunding, BankDetails, ContactRole } from "@/types/models";
+import { registrationService } from "@/services/api/registration";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -93,25 +94,43 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log("Submitting registration data:", formData);
+      
+      const response = await registrationService.register(formData as RegistrationData);
+      
+      if (response.error) {
+        toast.error("Registration failed", {
+          description: response.error
+        });
+        return;
+      }
+      
+      // Store token if provided
+      if (response.data?.token) {
+        localStorage.setItem('auth_token', response.data.token);
+      }
+      
+      // Store user data if provided
+      if (response.data?.user) {
+        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      }
       
       // Success notification
-      toast.success("Registration successful", {
-        description: "Your account application has been submitted for review.",
+      toast.success("Registration successful!", {
+        description: "Your account has been created successfully.",
         action: {
-          label: "View status",
-          onClick: () => console.log("View status")
+          label: "Go to Dashboard",
+          onClick: () => navigate("/dashboard")
         }
       });
       
-      // Redirect to success page or dashboard
-      navigate("/login");
+      // Redirect to dashboard
+      navigate("/dashboard");
       
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Registration failed", {
-        description: "There was an error processing your application. Please try again."
+        description: error instanceof Error ? error.message : "There was an error processing your application. Please try again."
       });
     } finally {
       setIsSubmitting(false);
