@@ -37,12 +37,23 @@ export async function apiRequest<T>(
     }
 
     console.log(`Making ${method} request to: ${API_BASE_URL}/${endpoint}`);
+    console.log(`Request body:`, body);
     
     const response = await fetch(`${API_BASE_URL}/${endpoint}`, config);
     
+    console.log(`Response status: ${response.status}`);
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      let errorData;
+      try {
+        errorData = await response.json();
+        console.log('Error response data:', errorData);
+      } catch (e) {
+        errorData = { message: `HTTP error! status: ${response.status}` };
+      }
+      
+      const errorMessage = errorData.error || errorData.message || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();

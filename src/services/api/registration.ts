@@ -50,6 +50,8 @@ export const registrationService = {
         }
       };
 
+      console.log("Formatted data being sent:", formattedData);
+
       const response = await apiRequest('auth/register', 'POST', formattedData);
       
       if (response.error) {
