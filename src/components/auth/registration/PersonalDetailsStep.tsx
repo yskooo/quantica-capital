@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -36,7 +35,9 @@ const personalSchema = z.object({
   P_Name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   P_Address: z.string().min(5, { message: "Please enter your full address." }),
   P_Postal_Code: z.string().min(3, { message: "Please enter a valid postal code." }),
-  P_Cell_Number: z.string().min(10, { message: "Please enter a valid phone number." }),
+  P_Cell_Number: z.string()
+    .min(10, { message: "Please enter a valid phone number." })
+    .regex(/^\+?[1-9]\d{1,14}$/, { message: "Please enter a valid phone number format (e.g., +639123456789)" }),
   Date_of_Birth: z.date({
     required_error: "Please select your date of birth.",
   }),
@@ -72,7 +73,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
       P_Name: data.P_Name,
       P_Address: data.P_Address,
       P_Postal_Code: data.P_Postal_Code,
-      P_Cell_Number: parseInt(data.P_Cell_Number),
+      P_Cell_Number: parseInt(data.P_Cell_Number.replace(/\D/g, '')), // Remove non-digits and convert to number
       P_Email: defaultValues?.P_Email || "",
       Date_of_Birth: data.Date_of_Birth.toISOString(),
       Employment_Status: data.Employment_Status,
@@ -134,8 +135,15 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
-                <Input type="tel" placeholder="+1 (555) 000-0000" {...field} />
+                <Input 
+                  type="tel" 
+                  placeholder="+639123456789 or 09123456789" 
+                  {...field} 
+                />
               </FormControl>
+              <FormDescription>
+                Enter your mobile phone number (e.g., +639123456789 or 09123456789)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
