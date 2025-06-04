@@ -33,7 +33,7 @@ export interface PersonalData {
   P_Name?: string; // VARCHAR(50)
   P_Address?: string; // VARCHAR(150)
   P_Postal_Code?: string; // CHAR(5)
-  P_Cell_Number: number | string; // BIGINT - can accept both for compatibility
+  P_Cell_Number: number; // BIGINT
   P_Email?: string; // VARCHAR(60)
   Date_of_Birth?: string; // DATE
   Employment_Status?: 'Employed' | 'Self-Employed' | 'Unemployed' | 'Student' | 'Retired';

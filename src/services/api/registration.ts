@@ -14,7 +14,7 @@ export const registrationService = {
           P_Name: registrationData.personalData?.P_Name,
           P_Address: registrationData.personalData?.P_Address,
           P_Postal_Code: registrationData.personalData?.P_Postal_Code,
-          P_Cell_Number: registrationData.personalData?.P_Cell_Number, // Keep as string
+          P_Cell_Number: registrationData.personalData?.P_Cell_Number?.toString(), // Convert to string for backend validation
           Date_of_Birth: registrationData.personalData?.Date_of_Birth,
           Employment_Status: registrationData.personalData?.Employment_Status,
           Purpose_of_Opening: registrationData.personalData?.Purpose_of_Opening
