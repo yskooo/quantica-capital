@@ -37,7 +37,7 @@ const personalSchema = z.object({
   P_Postal_Code: z.string().min(3, { message: "Please enter a valid postal code." }),
   P_Cell_Number: z.string()
     .min(10, { message: "Please enter a valid phone number." })
-    .regex(/^\+?[1-9]\d{1,14}$/, { message: "Please enter a valid phone number format (e.g., +639123456789)" }),
+    .regex(/^(09\d{9}|\+639\d{9})$/, { message: "Please use format: 09XXXXXXXXX or +639XXXXXXXXX" }),
   Date_of_Birth: z.date({
     required_error: "Please select your date of birth.",
   }),
@@ -68,18 +68,30 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
   });
 
   function onSubmit(data: PersonalFormValues) {
-    // Ensure all required properties are provided before calling onNext
+    // Normalize phone number to consistent format for backend
+    let normalizedPhone = data.P_Cell_Number.replace(/\D/g, ''); // Remove all non-digits
+    
+    // If it starts with 09, convert to +639 format
+    if (normalizedPhone.startsWith('09')) {
+      normalizedPhone = '639' + normalizedPhone.substring(2);
+    }
+    // If it starts with 639, keep as is
+    else if (normalizedPhone.startsWith('639')) {
+      normalizedPhone = normalizedPhone;
+    }
+    
     const personalData: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID"> = { 
       P_Name: data.P_Name,
       P_Address: data.P_Address,
       P_Postal_Code: data.P_Postal_Code,
-      P_Cell_Number: parseInt(data.P_Cell_Number.replace(/\D/g, '')), // Remove non-digits and convert to number
+      P_Cell_Number: parseInt(normalizedPhone), // Convert to number as expected by backend
       P_Email: defaultValues?.P_Email || "",
       Date_of_Birth: data.Date_of_Birth.toISOString(),
       Employment_Status: data.Employment_Status,
       Purpose_of_Opening: data.Purpose_of_Opening
     };
     
+    console.log("Personal data being sent:", personalData);
     onNext(personalData);
   }
 
@@ -93,7 +105,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder="Juan Dela Cruz" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -107,7 +119,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
             <FormItem>
               <FormLabel>Address</FormLabel>
               <FormControl>
-                <Input placeholder="123 Main St, City" {...field} />
+                <Input placeholder="123 Rizal Street, Barangay San Jose, Quezon City" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -121,7 +133,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
             <FormItem>
               <FormLabel>Postal Code</FormLabel>
               <FormControl>
-                <Input placeholder="12345" {...field} />
+                <Input placeholder="1100" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -137,12 +149,12 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
               <FormControl>
                 <Input 
                   type="tel" 
-                  placeholder="+639123456789 or 09123456789" 
+                  placeholder="09171234567" 
                   {...field} 
                 />
               </FormControl>
               <FormDescription>
-                Enter your mobile phone number (e.g., +639123456789 or 09123456789)
+                Enter your mobile phone number (e.g., 09171234567 or +639171234567)
               </FormDescription>
               <FormMessage />
             </FormItem>
