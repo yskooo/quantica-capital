@@ -68,23 +68,21 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
   });
 
   function onSubmit(data: PersonalFormValues) {
-    // Normalize phone number to consistent format for backend
+    // Normalize phone number for backend validation
     let normalizedPhone = data.P_Cell_Number.replace(/\D/g, ''); // Remove all non-digits
     
-    // If it starts with 09, convert to +639 format
+    // Convert to +63 format for backend validation (isMobilePhone expects this format)
     if (normalizedPhone.startsWith('09')) {
-      normalizedPhone = '639' + normalizedPhone.substring(2);
-    }
-    // If it starts with 639, keep as is
-    else if (normalizedPhone.startsWith('639')) {
-      normalizedPhone = normalizedPhone;
+      normalizedPhone = '+63' + normalizedPhone.substring(2);
+    } else if (normalizedPhone.startsWith('639')) {
+      normalizedPhone = '+' + normalizedPhone;
     }
     
     const personalData: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID"> = { 
       P_Name: data.P_Name,
       P_Address: data.P_Address,
       P_Postal_Code: data.P_Postal_Code,
-      P_Cell_Number: parseInt(normalizedPhone), // Convert to number as expected by backend
+      P_Cell_Number: parseInt(normalizedPhone.replace(/\D/g, '')), // Convert to number as expected by backend
       P_Email: defaultValues?.P_Email || "",
       Date_of_Birth: data.Date_of_Birth.toISOString(),
       Employment_Status: data.Employment_Status,

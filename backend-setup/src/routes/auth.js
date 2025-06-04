@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -12,16 +11,23 @@ router.post('/register', [
   body('credentials.email').isEmail().normalizeEmail(),
   body('credentials.password').isLength({ min: 8 }),
   body('personalData.P_Name').notEmpty(),
-  body('personalData.P_Cell_Number').isMobilePhone(),
+  body('personalData.P_Cell_Number').isNumeric().isLength({ min: 10, max: 15 }),
 ], async (req, res) => {
   try {
     // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { personalData, bankDetails, sourceOfFunding, contacts, credentials } = req.body;
+
+    console.log('Registration request received:', {
+      email: credentials.email,
+      phone: personalData.P_Cell_Number,
+      name: personalData.P_Name
+    });
 
     // Check if email already exists
     const [existingUser] = await pool.execute(
