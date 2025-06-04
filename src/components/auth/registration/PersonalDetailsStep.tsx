@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -37,7 +38,7 @@ const personalSchema = z.object({
   P_Postal_Code: z.string().min(3, { message: "Please enter a valid postal code." }),
   P_Cell_Number: z.string()
     .min(10, { message: "Please enter a valid phone number." })
-    .regex(/^\+?[1-9]\d{1,14}$/, { message: "Please enter a valid phone number format (e.g., +639123456789)" }),
+    .regex(/^(\+63|0)[0-9]{10}$/, { message: "Please enter a valid Philippine phone number (e.g., +639123456789 or 09123456789)" }),
   Date_of_Birth: z.date({
     required_error: "Please select your date of birth.",
   }),
@@ -73,7 +74,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
       P_Name: data.P_Name,
       P_Address: data.P_Address,
       P_Postal_Code: data.P_Postal_Code,
-      P_Cell_Number: parseInt(data.P_Cell_Number.replace(/\D/g, '')), // Remove non-digits and convert to number
+      P_Cell_Number: data.P_Cell_Number, // Keep as string for backend
       P_Email: defaultValues?.P_Email || "",
       Date_of_Birth: data.Date_of_Birth.toISOString(),
       Employment_Status: data.Employment_Status,
@@ -142,7 +143,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
                 />
               </FormControl>
               <FormDescription>
-                Enter your mobile phone number (e.g., +639123456789 or 09123456789)
+                Enter your Philippine mobile phone number (e.g., +639123456789 or 09123456789)
               </FormDescription>
               <FormMessage />
             </FormItem>
