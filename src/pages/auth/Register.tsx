@@ -124,7 +124,7 @@ const Register = () => {
       });
       
       // Redirect to dashboard
-      navigate("/dashboard");
+      navigate("/profile");
       
     } catch (error) {
       console.error("Registration error:", error);

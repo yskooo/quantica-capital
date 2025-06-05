@@ -18,7 +18,7 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
+            <span className="text-xl font-medium text-white text-transparent bg-clip-text">
               Quantica Capital
             </span>
           </Link>

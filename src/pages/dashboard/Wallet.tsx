@@ -156,26 +156,6 @@ const WalletPage = () => {
                 </CardContent>
               </Tabs>
             </Card>
-            
-            {/* Add Bank Account CTA */}
-            <Card className="glass-card bg-card/40 border border-primary/20 mb-6">
-              <CardContent className="flex flex-col md:flex-row items-center justify-between p-6">
-                <div className="flex flex-col md:flex-row items-center gap-4">
-                  <div className="bg-primary/10 p-3 rounded-full">
-                    <BanknoteIcon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="text-center md:text-left">
-                    <h3 className="text-lg font-semibold">Link a New Bank Account</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Connect your bank accounts for seamless transfers and withdrawals
-                    </p>
-                  </div>
-                </div>
-                <Button className="mt-4 md:mt-0" variant="outline">
-                  <PlusCircleIcon className="mr-2 h-4 w-4" /> Add Bank Account
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </main>
       </div>

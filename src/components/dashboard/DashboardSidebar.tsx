@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -40,23 +39,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-16"
         )}
       >
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute right-2 top-2 md:hidden" 
-          onClick={() => setIsOpen(false)}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute right-2 top-2 hidden md:flex" 
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-        </Button>
+       
 
         <div className="px-3 py-2">
           {isOpen && (
@@ -69,28 +52,23 @@ const DashboardSidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
           )}
           
           <nav className="space-y-1">
-            <SidebarItem to="/dashboard" icon={<LayoutDashboard />} text="Dashboard" isOpen={isOpen} isActive={location.pathname === "/dashboard"} />
+            {/* <SidebarItem to="/dashboard" icon={<LayoutDashboard />} text="Dashboard" isOpen={isOpen} isActive={location.pathname === "/dashboard"} /> */}
             <SidebarItem to="/trading" icon={<ChartLine />} text="Trading" isOpen={isOpen} isActive={location.pathname === "/trading"} />
-            <SidebarItem to="/portfolio" icon={<Briefcase />} text="Portfolio" isOpen={isOpen} isActive={location.pathname === "/portfolio"} />
-            <SidebarItem to="/wallet" icon={<Wallet />} text="Wallet" isOpen={isOpen} isActive={location.pathname === "/wallet"} />
-            
-            <div className="py-1">
-              <Separator className="bg-border/30" />
-            </div>
-            
+            {/* <SidebarItem to="/portfolio" icon={<Briefcase />} text="Portfolio" isOpen={isOpen} isActive={location.pathname === "/portfolio"} /> */}
+            <SidebarItem to="/wallet" icon={<Wallet />} text="Wallet" isOpen={isOpen} isActive={location.pathname === "/wallet"} />          
             <SidebarItem to="/profile" icon={<User />} text="Profile" isOpen={isOpen} isActive={location.pathname === "/profile"} />
-            <SidebarItem to="/settings" icon={<Settings />} text="Settings" isOpen={isOpen} isActive={location.pathname === "/settings"} />
+            {/* <SidebarItem to="/settings" icon={<Settings />} text="Settings" isOpen={isOpen} isActive={location.pathname === "/settings"} /> */}
           </nav>
           
-          {isOpen && (
+          {/* {isOpen && (
             <div className="absolute bottom-4 left-0 right-0 px-3">
               <div className="bg-primary/10 rounded-lg p-3 border border-primary/20">
                 <p className="text-xs text-center text-muted-foreground">
-                  Quantica Trading Platform v1.0
+                  Quantica Stock Opening Account 
                 </p>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </aside>
 

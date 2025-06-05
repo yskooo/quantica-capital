@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Core API utilities for making requests to MySQL backend
 
