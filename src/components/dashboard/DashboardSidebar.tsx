@@ -47,15 +47,15 @@ const DashboardSidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                 <span className="font-bold text-primary text-xl">Q</span>
               </div>
-              <span className="ml-2 font-bold text-lg">Quantica</span>
+              <span className="ml-2 font-medium text-lg">Quantica</span>
             </div>
           )}
           
           <nav className="space-y-1">
             {/* <SidebarItem to="/dashboard" icon={<LayoutDashboard />} text="Dashboard" isOpen={isOpen} isActive={location.pathname === "/dashboard"} /> */}
-            <SidebarItem to="/trading" icon={<ChartLine />} text="Trading" isOpen={isOpen} isActive={location.pathname === "/trading"} />
+            {/* <SidebarItem to="/trading" icon={<ChartLine />} text="Trading" isOpen={isOpen} isActive={location.pathname === "/trading"} /> */}
             {/* <SidebarItem to="/portfolio" icon={<Briefcase />} text="Portfolio" isOpen={isOpen} isActive={location.pathname === "/portfolio"} /> */}
-            <SidebarItem to="/wallet" icon={<Wallet />} text="Wallet" isOpen={isOpen} isActive={location.pathname === "/wallet"} />          
+            {/* <SidebarItem to="/wallet" icon={<Wallet />} text="Wallet" isOpen={isOpen} isActive={location.pathname === "/wallet"} />           */}
             <SidebarItem to="/profile" icon={<User />} text="Profile" isOpen={isOpen} isActive={location.pathname === "/profile"} />
             {/* <SidebarItem to="/settings" icon={<Settings />} text="Settings" isOpen={isOpen} isActive={location.pathname === "/settings"} /> */}
           </nav>

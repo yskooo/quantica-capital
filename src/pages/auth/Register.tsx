@@ -119,7 +119,7 @@ const Register = () => {
         description: "Your account has been created successfully.",
         action: {
           label: "Go to Dashboard",
-          onClick: () => navigate("/dashboard")
+          onClick: () => navigate("/profile]")
         }
       });
       
