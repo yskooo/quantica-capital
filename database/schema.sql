@@ -2,8 +2,8 @@
 -- Stock Account Management System Database Schema
 -- MySQL 8.0+ Compatible
 
-CREATE SCHEMA IF NOT EXISTS `stockacc_db`;
-USE `stockacc_db`;
+CREATE SCHEMA IF NOT EXISTS `stockacc`;
+USE `stockacc`;
 
 -- Table: bank_details
 CREATE TABLE `bank_details` (

@@ -21,15 +21,14 @@ const accountSchema = z.object({
     .email({ message: "Please enter a valid email address." })
     .max(60, { message: "Email cannot exceed 60 characters." }),
   password: z.string()
-    .min(8, { message: "Password must be at least 8 characters." })
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-      message: "Password must contain at least one uppercase letter, one lowercase letter, and one number.",
-    }),
+    .min(4, { message: "PIN must be at least 4 digits." })
+    .regex(/^\d+$/, { message: "PIN must contain only numbers." }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match.",
+  message: "PINs do not match.",
   path: ["confirmPassword"],
 });
+
 
 type AccountFormValues = z.infer<typeof accountSchema>;
 
