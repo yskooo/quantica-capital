@@ -44,7 +44,7 @@ const Login = () => {
         }
         
         toast.success(response.message || "Login successful!");
-        navigate("/dashboard");
+        navigate("/profile");
       } else {
         toast.error("Invalid login response");
       }
