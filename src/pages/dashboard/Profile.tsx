@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Wallet, Settings, Loader2 } from "lucide-react";
+import { User, Wallet, Settings, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
@@ -16,6 +18,9 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Load user profile data on component mount
   useEffect(() => {
@@ -78,6 +83,39 @@ const Profile = () => {
       toast.error("Failed to update profile");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    setIsDeleting(true);
+    
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (!userData) return;
+
+      const user = JSON.parse(userData);
+      const response = await userAPI.deleteProfile(user.accId);
+      
+      if (response.error) {
+        toast.error("Delete failed", {
+          description: response.error
+        });
+        return;
+      }
+
+      toast.success("Account deleted successfully!");
+      
+      // Clear user data and redirect to home
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('auth_token');
+      navigate('/');
+      
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete account");
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -393,6 +431,52 @@ const Profile = () => {
                         <Button>Save Preferences</Button>
                       </div>
                     </form>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card border-red-200">
+                  <CardHeader>
+                    <CardTitle className="text-red-600">Danger Zone</CardTitle>
+                    <CardDescription>Permanently delete your account and all associated data</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Once you delete your account, there is no going back. This action cannot be undone.
+                        All your data including profile information, bank details, and transaction history will be permanently removed.
+                      </p>
+                      
+                      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="destructive" className="w-full sm:w-auto">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete My Account
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Are you absolutely sure?</DialogTitle>
+                            <DialogDescription>
+                              This action cannot be undone. This will permanently delete your account
+                              and remove all your data from our servers.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              onClick={deleteAccount}
+                              disabled={isDeleting}
+                            >
+                              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                              Delete Account
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>

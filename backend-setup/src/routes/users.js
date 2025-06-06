@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { pool } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
@@ -196,6 +195,102 @@ router.put('/profile/:accId', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ error: 'Failed to update profile', message: error.message });
+  }
+});
+
+// Delete user account
+router.delete('/profile/:accId', authenticateToken, async (req, res) => {
+  try {
+    const { accId } = req.params;
+
+    console.log('Deleting account for user:', accId);
+
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Get user data to find related records
+      const [personalRows] = await connection.execute(
+        'SELECT Bank_Acc_No, Funding_ID FROM personal_data WHERE Acc_ID = ?',
+        [accId]
+      );
+
+      if (personalRows.length === 0) {
+        await connection.rollback();
+        connection.release();
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const personal = personalRows[0];
+
+      // Delete contacts associated with this account
+      await connection.execute(
+        'DELETE FROM role_of_contact WHERE Acc_ID = ?',
+        [accId]
+      );
+
+      // Get contact IDs that might need to be deleted if they're not referenced elsewhere
+      const [contactIds] = await connection.execute(
+        'SELECT DISTINCT Contact_ID FROM role_of_contact WHERE Acc_ID = ?',
+        [accId]
+      );
+
+      // Delete contact person details for contacts that are only linked to this account
+      for (const contact of contactIds) {
+        const [otherReferences] = await connection.execute(
+          'SELECT COUNT(*) as count FROM role_of_contact WHERE Contact_ID = ? AND Acc_ID != ?',
+          [contact.Contact_ID, accId]
+        );
+
+        if (otherReferences[0].count === 0) {
+          await connection.execute(
+            'DELETE FROM contact_person_details WHERE Contact_ID = ?',
+            [contact.Contact_ID]
+          );
+        }
+      }
+
+      // Delete personal data (this will cascade due to foreign key constraints)
+      await connection.execute(
+        'DELETE FROM personal_data WHERE Acc_ID = ?',
+        [accId]
+      );
+
+      // Delete bank details if they exist
+      if (personal.Bank_Acc_No) {
+        await connection.execute(
+          'DELETE FROM bank_details WHERE Bank_Acc_No = ?',
+          [personal.Bank_Acc_No]
+        );
+      }
+
+      // Delete funding source if it exists
+      if (personal.Funding_ID) {
+        await connection.execute(
+          'DELETE FROM source_of_funding WHERE Funding_ID = ?',
+          [personal.Funding_ID]
+        );
+      }
+
+      // Delete credentials
+      await connection.execute(
+        'DELETE FROM credentials WHERE Acc_ID = ?',
+        [accId]
+      );
+
+      await connection.commit();
+      res.json({ message: 'Account deleted successfully' });
+
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account', message: error.message });
   }
 });
 
