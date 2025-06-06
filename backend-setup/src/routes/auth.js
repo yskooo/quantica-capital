@@ -1,3 +1,4 @@
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -5,6 +6,22 @@ const { body, validationResult } = require('express-validator');
 const { pool, generateAccId, generateContactId, generateFundingId, generateBankAccNo } = require('../config/database');
 
 const router = express.Router();
+
+// Helper function to format date for MySQL
+const formatDateForMySQL = (dateString) => {
+  if (!dateString) return null;
+  
+  // If it's already in YYYY-MM-DD format, return as is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return dateString;
+  }
+  
+  // If it's an ISO string, extract date part
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return null;
+  
+  return date.toISOString().split('T')[0];
+};
 
 // Registration endpoint - with simplified validation
 router.post('/register', [
@@ -87,6 +104,12 @@ router.post('/register', [
         ]
       );
 
+      // Format dates for MySQL
+      const bankOpeningDate = formatDateForMySQL(bankDetails.Bank_Acc_Date_of_Opening);
+      const dateOfBirth = formatDateForMySQL(personalData.Date_of_Birth);
+
+      console.log('Formatted dates:', { bankOpeningDate, dateOfBirth });
+
       // Insert bank details
       await connection.execute(
         `INSERT INTO bank_details (Bank_Acc_No, Bank_Acc_Name, Bank_Acc_Date_of_Opening, Bank_Name, Branch) 
@@ -94,7 +117,7 @@ router.post('/register', [
         [
           bankAccNo,
           bankDetails.Bank_Acc_Name,
-          bankDetails.Bank_Acc_Date_of_Opening || new Date(),
+          bankOpeningDate,
           bankDetails.Bank_Name,
           bankDetails.Branch
         ]
@@ -111,8 +134,8 @@ router.post('/register', [
           personalData.P_Address,
           personalData.P_Postal_Code,
           personalData.P_Cell_Number,
-          credentials?.email || null, // Make email optional
-          personalData.Date_of_Birth || null,
+          credentials?.email || null,
+          dateOfBirth,
           personalData.Employment_Status || 'Student',
           personalData.Purpose_of_Opening || 'Personal Use',
           fundingId,

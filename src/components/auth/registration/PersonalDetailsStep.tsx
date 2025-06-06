@@ -1,8 +1,7 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,13 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { PersonalData } from "@/types/models";
 
 const personalSchema = z.object({
@@ -38,9 +30,8 @@ const personalSchema = z.object({
   P_Cell_Number: z.string()
     .min(10, { message: "Please enter a valid phone number." })
     .regex(/^(09\d{9}|\+639\d{9})$/, { message: "Please use format: 09XXXXXXXXX or +639XXXXXXXXX" }),
-  Date_of_Birth: z.date({
-    required_error: "Please select your date of birth.",
-  }),
+  Date_of_Birth: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Please use format: YYYY-MM-DD" }),
   Employment_Status: z.enum(['Employed', 'Unemployed', 'Self-Employed', 'Student', 'Retired']),
   Purpose_of_Opening: z.enum(['Savings', 'Investment', 'Business', 'Personal Use', 'Others']),
 });
@@ -61,7 +52,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
       P_Address: defaultValues?.P_Address || "",
       P_Postal_Code: defaultValues?.P_Postal_Code || "",
       P_Cell_Number: defaultValues?.P_Cell_Number?.toString() || "",
-      Date_of_Birth: defaultValues?.Date_of_Birth ? new Date(defaultValues.Date_of_Birth) : undefined,
+      Date_of_Birth: defaultValues?.Date_of_Birth || "",
       Employment_Status: (defaultValues?.Employment_Status as any) || "Employed",
       Purpose_of_Opening: (defaultValues?.Purpose_of_Opening as any) || "Savings",
     },
@@ -71,20 +62,20 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
     // Normalize phone number for backend validation
     let normalizedPhone = data.P_Cell_Number.replace(/\D/g, ''); // Remove all non-digits
     
-    // Convert to +63 format for backend validation (isMobilePhone expects this format)
+    // Convert to standard format for backend
     if (normalizedPhone.startsWith('09')) {
-      normalizedPhone = '+63' + normalizedPhone.substring(2);
+      normalizedPhone = '63' + normalizedPhone.substring(1);
     } else if (normalizedPhone.startsWith('639')) {
-      normalizedPhone = '+' + normalizedPhone;
+      normalizedPhone = normalizedPhone;
     }
     
     const personalData: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID"> = { 
       P_Name: data.P_Name,
       P_Address: data.P_Address,
       P_Postal_Code: data.P_Postal_Code,
-      P_Cell_Number: parseInt(normalizedPhone.replace(/\D/g, '')), // Convert to number as expected by backend
+      P_Cell_Number: parseInt(normalizedPhone), // Convert to number as expected by backend
       P_Email: defaultValues?.P_Email || "",
-      Date_of_Birth: data.Date_of_Birth.toISOString(),
+      Date_of_Birth: data.Date_of_Birth, // Send as YYYY-MM-DD string
       Employment_Status: data.Employment_Status,
       Purpose_of_Opening: data.Purpose_of_Opening
     };
@@ -163,39 +154,18 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
           control={form.control}
           name="Date_of_Birth"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
+            <FormItem>
               <FormLabel>Date of Birth</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <FormControl>
+                <Input 
+                  type="text" 
+                  placeholder="1990-01-15" 
+                  {...field} 
+                />
+              </FormControl>
+              <FormDescription>
+                Enter date in YYYY-MM-DD format (e.g., 1990-01-15)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
