@@ -16,19 +16,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+// Simplified account schema with easier validation
 const accountSchema = z.object({
   email: z.string()
     .email({ message: "Please enter a valid email address." })
     .max(60, { message: "Email cannot exceed 60 characters." }),
   password: z.string()
-    .min(4, { message: "PIN must be at least 4 digits." })
-    .regex(/^\d+$/, { message: "PIN must contain only numbers." }),
+    .min(4, { message: "Password must be at least 4 characters." }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "PINs do not match.",
+  message: "Passwords do not match.",
   path: ["confirmPassword"],
 });
-
 
 type AccountFormValues = z.infer<typeof accountSchema>;
 
@@ -89,7 +88,7 @@ export function AccountStep({ onNext, defaultValues }: AccountStepProps) {
               <FormControl>
                 <div className="relative">
                   <Input 
-                    placeholder="••••••••" 
+                    placeholder="Enter at least 4 characters" 
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
                     className="pr-10" 
@@ -119,7 +118,7 @@ export function AccountStep({ onNext, defaultValues }: AccountStepProps) {
               <FormLabel>Confirm Password</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="••••••••" 
+                  placeholder="Retype your password" 
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password" 
                   {...field} 

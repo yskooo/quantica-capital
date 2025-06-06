@@ -14,7 +14,7 @@ export const registrationService = {
           P_Name: registrationData.personalData?.P_Name,
           P_Address: registrationData.personalData?.P_Address,
           P_Postal_Code: registrationData.personalData?.P_Postal_Code,
-          P_Cell_Number: registrationData.personalData?.P_Cell_Number?.toString(), // Convert to string for backend validation
+          P_Cell_Number: registrationData.personalData?.P_Cell_Number, // No need to convert, backend will handle
           Date_of_Birth: registrationData.personalData?.Date_of_Birth,
           Employment_Status: registrationData.personalData?.Employment_Status,
           Purpose_of_Opening: registrationData.personalData?.Purpose_of_Opening
@@ -44,10 +44,10 @@ export const registrationService = {
             C_Contact_Number: contact.contactDetails.C_Contact_Number
           }
         })) || [],
-        credentials: {
-          email: registrationData.credentials?.email,
-          password: registrationData.credentials?.password
-        }
+        credentials: registrationData.credentials ? {
+          email: registrationData.credentials.email,
+          password: registrationData.credentials.password
+        } : undefined
       };
 
       console.log("Formatted data being sent:", formattedData);

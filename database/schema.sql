@@ -2,8 +2,8 @@
 -- Stock Account Management System Database Schema
 -- MySQL 8.0+ Compatible
 
-CREATE SCHEMA IF NOT EXISTS `stockacc`;
-USE `stockacc`;
+CREATE SCHEMA IF NOT EXISTS `stockacc_db`;
+USE `stockacc_db`;
 
 -- Table: bank_details
 CREATE TABLE `bank_details` (
@@ -37,8 +37,8 @@ CREATE TABLE `source_of_funding` (
   `Business/School_Name` VARCHAR(80) NULL,
   `Office/School_Address` VARCHAR(150) NULL,
   `Office/School_Number` VARCHAR(15) NULL,
-  `Valid_ID` ENUM('Driver\'s License', 'Passport', 'SSS ID', 'PhilHealth ID', 'Others') NULL,
-  `Source_of_Income` ENUM('Salary', 'Business', 'Remittance', 'Scholarship', 'Pension', 'Others') NULL,
+  `Valid_ID` ENUM("Driver's License", "Passport", "SSS ID", "PhilHealth ID", "Student ID", "National ID", "Others") NULL,
+  `Source_of_Income` ENUM("Salary", "Business", "Remittance", "Scholarship", "Pension", "Others") NULL,
   PRIMARY KEY (`Funding_ID`),
   UNIQUE INDEX `Funding_ID_UNIQUE` (`Funding_ID` ASC) VISIBLE
 );
@@ -53,7 +53,7 @@ CREATE TABLE `personal_data` (
   `P_Email` VARCHAR(60) NULL,
   `Date_of_Birth` DATE NULL,
   `Employment_Status` ENUM('Employed', 'Self-Employed', 'Unemployed', 'Student', 'Retired') NULL,
-  `Purpose_of_Opening` ENUM('Savings', 'Investment', 'Business', 'Personal Use', 'Others') NULL,
+  `Purpose_of_Opening` ENUM('Savings', 'Investment', 'Business', 'Personal Use', 'Retirement', 'Others') NULL,
   `Funding_ID` CHAR(7) NOT NULL,
   `Bank_Acc_No` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`Acc_ID`),
@@ -71,20 +71,20 @@ CREATE TABLE `role_of_contact` (
   `Contact_ID` CHAR(5) NOT NULL,
   `C_Relationship` ENUM('Father', 'Mother', 'Spouse', 'Son', 'Daughter', 'Friend', 'Colleague', 'Mentor', 'Others') NULL,
   PRIMARY KEY (`Acc_ID`, `C_Role`, `Contact_ID`),
-  INDEX `Contact_ID_idx` (`Contact_ID` ASC) VISIBLE,
-  CONSTRAINT `fk_personal_data_acc_id`
-    FOREIGN KEY (`Acc_ID`)
-    REFERENCES `personal_data` (`Acc_ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT,
-  CONSTRAINT `fk_contact_person_contact_id`
-    FOREIGN KEY (`Contact_ID`)
-    REFERENCES `contact_person_details` (`Contact_ID`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT
+  INDEX `Contact_ID_idx` (`Contact_ID` ASC) VISIBLE
 );
 
--- Foreign Key Constraints for personal_data
+-- Create user authentication table
+CREATE TABLE `user_auth` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `acc_id` CHAR(4) UNIQUE,
+  `email` VARCHAR(60) UNIQUE,
+  `password_hash` VARCHAR(255),
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Foreign Key Constraints
 ALTER TABLE `personal_data` 
 ADD CONSTRAINT `fk_source_of_funding_funding_id`
   FOREIGN KEY (`Funding_ID`)
@@ -97,20 +97,17 @@ ADD CONSTRAINT `fk_bank_details_bank_acc_no`
   ON DELETE RESTRICT
   ON UPDATE RESTRICT;
 
--- Create user authentication table
-CREATE TABLE `user_auth` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `acc_id` CHAR(4) UNIQUE,
-  `email` VARCHAR(60) UNIQUE,
-  `password_hash` VARCHAR(255),
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT `fk_user_auth_acc_id`
-    FOREIGN KEY (`acc_id`)
-    REFERENCES `personal_data` (`Acc_ID`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
-);
+ALTER TABLE `role_of_contact` 
+ADD CONSTRAINT `fk_personal_data_acc_id`
+  FOREIGN KEY (`Acc_ID`)
+  REFERENCES `personal_data` (`Acc_ID`)
+  ON DELETE RESTRICT
+  ON UPDATE RESTRICT,
+ADD CONSTRAINT `fk_contact_person_contact_id`
+  FOREIGN KEY (`Contact_ID`)
+  REFERENCES `contact_person_details` (`Contact_ID`)
+  ON DELETE RESTRICT
+  ON UPDATE RESTRICT;
 
 -- Insert some sample bank data for testing
 INSERT INTO `bank_details` (`Bank_Acc_No`, `Bank_Acc_Name`, `Bank_Acc_Date_of_Opening`, `Bank_Name`, `Branch`) VALUES

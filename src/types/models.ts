@@ -24,7 +24,7 @@ export interface SourceOfFunding {
   'Business/School_Name'?: string; // VARCHAR(80)
   'Office/School_Address'?: string; // VARCHAR(150)
   'Office/School_Number'?: string; // VARCHAR(15)
-  Valid_ID?: 'Driver\'s License' | 'Passport' | 'SSS ID' | 'PhilHealth ID' | 'Others';
+  Valid_ID?: "Driver's License" | "Passport" | "SSS ID" | "PhilHealth ID" | "Student ID" | "National ID" | "Others";
   Source_of_Income?: 'Salary' | 'Business' | 'Remittance' | 'Scholarship' | 'Pension' | 'Others';
 }
 
@@ -37,7 +37,7 @@ export interface PersonalData {
   P_Email?: string; // VARCHAR(60)
   Date_of_Birth?: string; // DATE
   Employment_Status?: 'Employed' | 'Self-Employed' | 'Unemployed' | 'Student' | 'Retired';
-  Purpose_of_Opening?: 'Savings' | 'Investment' | 'Business' | 'Personal Use' | 'Others';
+  Purpose_of_Opening?: 'Savings' | 'Investment' | 'Business' | 'Personal Use' | 'Retirement' | 'Others';
   Funding_ID: string; // CHAR(7) FOREIGN KEY
   Bank_Acc_No: string; // VARCHAR(45) FOREIGN KEY
 }
@@ -62,7 +62,7 @@ export interface RegistrationData {
   bankDetails: Omit<BankDetails, 'Bank_Acc_No'>;
   sourceOfFunding: Omit<SourceOfFunding, 'Funding_ID'>;
   contacts: Array<ContactRole>;
-  credentials: {
+  credentials?: {
     email: string;
     password: string;
   };
@@ -70,8 +70,9 @@ export interface RegistrationData {
 
 // Login request/response types
 export interface LoginRequest {
-  email: string;
-  password: string;
+  email?: string;
+  password?: string;
+  phone?: number; // Allow login with phone number
 }
 
 export interface LoginResponse {

@@ -6,15 +6,19 @@ const { pool, generateAccId, generateContactId, generateFundingId, generateBankA
 
 const router = express.Router();
 
-// Registration endpoint
+// Registration endpoint - with simplified validation
 router.post('/register', [
-  body('credentials.email').isEmail().normalizeEmail(),
-  body('credentials.password').isLength({ min: 8 }),
+  // Make email optional
+  body('credentials.email').optional().isEmail().normalizeEmail(),
+  // Basic password validation
+  body('credentials.password').isLength({ min: 4 }),
+  // Require name
   body('personalData.P_Name').notEmpty(),
-  body('personalData.P_Cell_Number').isNumeric().isLength({ min: 10, max: 15 }),
+  // Remove strict validation on phone
+  body('personalData.P_Cell_Number').exists(),
 ], async (req, res) => {
   try {
-    // Validate input
+    // Validate input - we'll keep this simple
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log('Validation errors:', errors.array());
@@ -24,19 +28,31 @@ router.post('/register', [
     const { personalData, bankDetails, sourceOfFunding, contacts, credentials } = req.body;
 
     console.log('Registration request received:', {
-      email: credentials.email,
+      email: credentials?.email || 'No email provided',
       phone: personalData.P_Cell_Number,
       name: personalData.P_Name
     });
 
-    // Check if email already exists
-    const [existingUser] = await pool.execute(
-      'SELECT P_Email FROM personal_data WHERE P_Email = ?',
-      [credentials.email]
+    // Check if phone number already exists
+    const [existingPhone] = await pool.execute(
+      'SELECT P_Cell_Number FROM personal_data WHERE P_Cell_Number = ?',
+      [personalData.P_Cell_Number]
     );
 
-    if (existingUser.length > 0) {
-      return res.status(409).json({ error: 'Email already registered' });
+    if (existingPhone.length > 0) {
+      return res.status(409).json({ error: 'Phone number already registered' });
+    }
+
+    // Check email if provided
+    if (credentials?.email) {
+      const [existingUser] = await pool.execute(
+        'SELECT P_Email FROM personal_data WHERE P_Email = ?',
+        [credentials.email]
+      );
+
+      if (existingUser.length > 0) {
+        return res.status(409).json({ error: 'Email already registered' });
+      }
     }
 
     // Start transaction
@@ -49,8 +65,11 @@ router.post('/register', [
       const fundingId = await generateFundingId();
       const bankAccNo = generateBankAccNo();
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(credentials.password, parseInt(process.env.BCRYPT_ROUNDS) || 12);
+      // Hash password if provided
+      let hashedPassword = null;
+      if (credentials?.password) {
+        hashedPassword = await bcrypt.hash(credentials.password, parseInt(process.env.BCRYPT_ROUNDS) || 10);
+      }
 
       // Insert source of funding
       await connection.execute(
@@ -75,7 +94,7 @@ router.post('/register', [
         [
           bankAccNo,
           bankDetails.Bank_Acc_Name,
-          bankDetails.Bank_Acc_Date_of_Opening,
+          bankDetails.Bank_Acc_Date_of_Opening || new Date(),
           bankDetails.Bank_Name,
           bankDetails.Branch
         ]
@@ -92,10 +111,10 @@ router.post('/register', [
           personalData.P_Address,
           personalData.P_Postal_Code,
           personalData.P_Cell_Number,
-          credentials.email,
-          personalData.Date_of_Birth,
-          personalData.Employment_Status,
-          personalData.Purpose_of_Opening,
+          credentials?.email || null, // Make email optional
+          personalData.Date_of_Birth || null,
+          personalData.Employment_Status || 'Student',
+          personalData.Purpose_of_Opening || 'Personal Use',
           fundingId,
           bankAccNo
         ]
@@ -114,7 +133,7 @@ router.post('/register', [
             contact.contactDetails.C_Name,
             contact.contactDetails.C_Address,
             contact.contactDetails.C_Postal_Code,
-            contact.contactDetails.C_Email,
+            contact.contactDetails.C_Email || null,
             contact.contactDetails.C_Contact_Number
           ]
         );
@@ -123,12 +142,11 @@ router.post('/register', [
         await connection.execute(
           `INSERT INTO role_of_contact (Acc_ID, C_Role, Contact_ID, C_Relationship) 
            VALUES (?, ?, ?, ?)`,
-          [accId, contact.role, contactId, contact.relationship]
+          [accId, contact.role, contactId, contact.relationship || 'Friend']
         );
       }
 
-      // Store password hash (you might want a separate users table for authentication)
-      // For now, we'll create a simple auth table
+      // Create user_auth table if it doesn't exist
       await connection.execute(
         `CREATE TABLE IF NOT EXISTS user_auth (
           id INT AUTO_INCREMENT PRIMARY KEY,
@@ -139,24 +157,27 @@ router.post('/register', [
         )`
       );
 
-      await connection.execute(
-        'INSERT INTO user_auth (acc_id, email, password_hash) VALUES (?, ?, ?)',
-        [accId, credentials.email, hashedPassword]
-      );
+      if (credentials?.email && hashedPassword) {
+        // Store password hash
+        await connection.execute(
+          'INSERT INTO user_auth (acc_id, email, password_hash) VALUES (?, ?, ?)',
+          [accId, credentials.email, hashedPassword]
+        );
+      }
 
       await connection.commit();
 
       // Generate JWT token
       const token = jwt.sign(
-        { accId, email: credentials.email },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        { accId, email: credentials?.email, phone: personalData.P_Cell_Number },
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
       );
 
       res.status(201).json({
         message: 'Registration successful',
         data: {
-          user: { accId, email: credentials.email, name: personalData.P_Name },
+          user: { accId, email: credentials?.email, name: personalData.P_Name, phone: personalData.P_Cell_Number },
           token
         }
       });
@@ -174,9 +195,15 @@ router.post('/register', [
   }
 });
 
-// Login endpoint
+// Login endpoint - support both email and phone login
 router.post('/login', [
-  body('email').isEmail().normalizeEmail(),
+  // Either email or phone is required, but not both necessarily
+  body().custom((body) => {
+    if (!body.email && !body.phone) {
+      throw new Error('Either email or phone number is required');
+    }
+    return true;
+  }),
   body('password').notEmpty(),
 ], async (req, res) => {
   try {
@@ -185,19 +212,59 @@ router.post('/login', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { email, phone, password } = req.body;
+    let user;
 
-    // Get user authentication data
-    const [authRows] = await pool.execute(
-      'SELECT acc_id, email, password_hash FROM user_auth WHERE email = ?',
-      [email]
-    );
-
-    if (authRows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    // Try to find user by email first if provided
+    if (email) {
+      // Get user authentication data by email
+      const [authRows] = await pool.execute(
+        'SELECT acc_id, email, password_hash FROM user_auth WHERE email = ?',
+        [email]
+      );
+      
+      if (authRows.length > 0) {
+        user = authRows[0];
+      }
     }
 
-    const user = authRows[0];
+    // If no user found by email and phone provided, try to find by phone
+    if (!user && phone) {
+      // Get account ID from personal data by phone number
+      const [profileRows] = await pool.execute(
+        'SELECT Acc_ID, P_Email FROM personal_data WHERE P_Cell_Number = ?',
+        [phone]
+      );
+      
+      if (profileRows.length > 0) {
+        const accId = profileRows[0].Acc_ID;
+        const userEmail = profileRows[0].P_Email;
+        
+        // Get auth info using the account ID
+        const [authRows] = await pool.execute(
+          'SELECT acc_id, email, password_hash FROM user_auth WHERE acc_id = ?',
+          [accId]
+        );
+        
+        if (authRows.length > 0) {
+          user = authRows[0];
+        } else if (userEmail) {
+          // Try by email from personal_data if no direct auth entry
+          const [authByEmailRows] = await pool.execute(
+            'SELECT acc_id, email, password_hash FROM user_auth WHERE email = ?',
+            [userEmail]
+          );
+          
+          if (authByEmailRows.length > 0) {
+            user = authByEmailRows[0];
+          }
+        }
+      }
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
@@ -219,9 +286,9 @@ router.post('/login', [
 
     // Generate JWT token
     const token = jwt.sign(
-      { accId: user.acc_id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { accId: user.acc_id, email: profile.P_Email, phone: profile.P_Cell_Number },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
 
     res.json({
@@ -229,10 +296,10 @@ router.post('/login', [
       data: {
         user: {
           accId: profile.Acc_ID,
-          email: profile.P_Email,
+          email: profile.P_Email || null,
           name: profile.P_Name,
           phone: profile.P_Cell_Number,
-          address: profile.P_Address
+          address: profile.P_Address || null
         },
         token
       }
@@ -244,9 +311,28 @@ router.post('/login', [
   }
 });
 
-// Logout endpoint
+// Logout endpoint (simple)
 router.post('/logout', (req, res) => {
   res.json({ message: 'Logout successful' });
+});
+
+// Simple check if email exists (for validation)
+router.get('/check-email/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    const [rows] = await pool.execute(
+      'SELECT P_Email FROM personal_data WHERE P_Email = ?', 
+      [email]
+    );
+    
+    res.json({
+      available: rows.length === 0
+    });
+  } catch (error) {
+    console.error('Check email error:', error);
+    res.status(500).json({ error: 'Failed to check email' });
+  }
 });
 
 module.exports = router;
