@@ -5,6 +5,22 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper function to format date for MySQL
+const formatDateForMySQL = (dateString) => {
+  if (!dateString) return null;
+  
+  // If it's already in YYYY-MM-DD format, return as is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return dateString;
+  }
+  
+  // If it's an ISO string, extract date part
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return null;
+  
+  return date.toISOString().split('T')[0];
+};
+
 // Get user profile
 router.get('/profile/:accId', authenticateToken, async (req, res) => {
   try {
@@ -64,16 +80,35 @@ router.put('/profile/:accId', authenticateToken, async (req, res) => {
     const { accId } = req.params;
     const { personalData, bankDetails, sourceOfFunding } = req.body;
 
+    console.log('Update profile request:', { accId, personalData, bankDetails, sourceOfFunding });
+
     const connection = await pool.getConnection();
     await connection.beginTransaction();
 
     try {
       // Update personal data
       if (personalData) {
-        const fields = Object.keys(personalData).filter(key => personalData[key] !== undefined);
+        const updateFields = {};
+        
+        // Handle each field with proper formatting
+        if (personalData.P_Name !== undefined) updateFields.P_Name = personalData.P_Name;
+        if (personalData.P_Address !== undefined) updateFields.P_Address = personalData.P_Address;
+        if (personalData.P_Postal_Code !== undefined) updateFields.P_Postal_Code = personalData.P_Postal_Code;
+        if (personalData.P_Cell_Number !== undefined) updateFields.P_Cell_Number = personalData.P_Cell_Number;
+        if (personalData.Employment_Status !== undefined) updateFields.Employment_Status = personalData.Employment_Status;
+        if (personalData.Purpose_of_Opening !== undefined) updateFields.Purpose_of_Opening = personalData.Purpose_of_Opening;
+        
+        // Format date properly
+        if (personalData.Date_of_Birth !== undefined) {
+          updateFields.Date_of_Birth = formatDateForMySQL(personalData.Date_of_Birth);
+        }
+        
+        const fields = Object.keys(updateFields);
         if (fields.length > 0) {
           const setClause = fields.map(field => `${field} = ?`).join(', ');
-          const values = fields.map(field => personalData[field]);
+          const values = fields.map(field => updateFields[field]);
+          
+          console.log('Updating personal data:', { setClause, values });
           
           await connection.execute(
             `UPDATE personal_data SET ${setClause} WHERE Acc_ID = ?`,
@@ -90,10 +125,23 @@ router.put('/profile/:accId', authenticateToken, async (req, res) => {
         );
         
         if (bankAccNo.length > 0) {
-          const fields = Object.keys(bankDetails).filter(key => bankDetails[key] !== undefined);
+          const updateFields = {};
+          
+          if (bankDetails.Bank_Acc_Name !== undefined) updateFields.Bank_Acc_Name = bankDetails.Bank_Acc_Name;
+          if (bankDetails.Bank_Name !== undefined) updateFields.Bank_Name = bankDetails.Bank_Name;
+          if (bankDetails.Branch !== undefined) updateFields.Branch = bankDetails.Branch;
+          
+          // Format bank opening date properly
+          if (bankDetails.Bank_Acc_Date_of_Opening !== undefined) {
+            updateFields.Bank_Acc_Date_of_Opening = formatDateForMySQL(bankDetails.Bank_Acc_Date_of_Opening);
+          }
+          
+          const fields = Object.keys(updateFields);
           if (fields.length > 0) {
             const setClause = fields.map(field => `${field} = ?`).join(', ');
-            const values = fields.map(field => bankDetails[field]);
+            const values = fields.map(field => updateFields[field]);
+            
+            console.log('Updating bank details:', { setClause, values });
             
             await connection.execute(
               `UPDATE bank_details SET ${setClause} WHERE Bank_Acc_No = ?`,
@@ -111,10 +159,21 @@ router.put('/profile/:accId', authenticateToken, async (req, res) => {
         );
         
         if (fundingId.length > 0) {
-          const fields = Object.keys(sourceOfFunding).filter(key => sourceOfFunding[key] !== undefined);
+          const updateFields = {};
+          
+          if (sourceOfFunding.Nature_of_Work !== undefined) updateFields.Nature_of_Work = sourceOfFunding.Nature_of_Work;
+          if (sourceOfFunding['Business/School_Name'] !== undefined) updateFields['Business/School_Name'] = sourceOfFunding['Business/School_Name'];
+          if (sourceOfFunding['Office/School_Address'] !== undefined) updateFields['Office/School_Address'] = sourceOfFunding['Office/School_Address'];
+          if (sourceOfFunding['Office/School_Number'] !== undefined) updateFields['Office/School_Number'] = sourceOfFunding['Office/School_Number'];
+          if (sourceOfFunding.Valid_ID !== undefined) updateFields.Valid_ID = sourceOfFunding.Valid_ID;
+          if (sourceOfFunding.Source_of_Income !== undefined) updateFields.Source_of_Income = sourceOfFunding.Source_of_Income;
+          
+          const fields = Object.keys(updateFields);
           if (fields.length > 0) {
-            const setClause = fields.map(field => `${field} = ?`).join(', ');
-            const values = fields.map(field => sourceOfFunding[field]);
+            const setClause = fields.map(field => `\`${field}\` = ?`).join(', ');
+            const values = fields.map(field => updateFields[field]);
+            
+            console.log('Updating funding source:', { setClause, values });
             
             await connection.execute(
               `UPDATE source_of_funding SET ${setClause} WHERE Funding_ID = ?`,

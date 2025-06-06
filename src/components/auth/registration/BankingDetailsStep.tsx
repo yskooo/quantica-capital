@@ -2,8 +2,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,20 +13,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { BankDetails } from "@/types/models";
 
 const bankSchema = z.object({
   Bank_Acc_Name: z.string().min(2, { message: "Please enter the account holder name." }),
-  Bank_Acc_Date_of_Opening: z.date({
-    required_error: "Please select the account opening date.",
-  }),
+  Bank_Acc_Date_of_Opening: z.string().min(1, { message: "Please enter the account opening date." }),
   Bank_Name: z.string().min(2, { message: "Please enter the bank name." }),
   Branch: z.string().min(2, { message: "Please enter the branch name." }),
 });
@@ -46,17 +35,16 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
     resolver: zodResolver(bankSchema),
     defaultValues: {
       Bank_Acc_Name: defaultValues?.Bank_Acc_Name || "",
-      Bank_Acc_Date_of_Opening: defaultValues?.Bank_Acc_Date_of_Opening ? new Date(defaultValues.Bank_Acc_Date_of_Opening) : undefined,
+      Bank_Acc_Date_of_Opening: defaultValues?.Bank_Acc_Date_of_Opening || "",
       Bank_Name: defaultValues?.Bank_Name || "",
       Branch: defaultValues?.Branch || "",
     },
   });
 
   function onSubmit(data: BankFormValues) {
-    // Ensure all required properties are provided before calling onNext
     const bankDetails: Omit<BankDetails, 'Bank_Acc_No'> = {
       Bank_Acc_Name: data.Bank_Acc_Name,
-      Bank_Acc_Date_of_Opening: data.Bank_Acc_Date_of_Opening.toISOString(),
+      Bank_Acc_Date_of_Opening: data.Bank_Acc_Date_of_Opening,
       Bank_Name: data.Bank_Name,
       Branch: data.Branch,
     };
@@ -85,39 +73,14 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
           control={form.control}
           name="Bank_Acc_Date_of_Opening"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
+            <FormItem>
               <FormLabel>Account Opening Date</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date()
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <FormControl>
+                <Input 
+                  placeholder="YYYY-MM-DD (e.g. 2024-01-15)" 
+                  {...field} 
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
