@@ -155,7 +155,7 @@ const Profile = () => {
                 </TabsTrigger>
                 <TabsTrigger value="preferences">
                   <Settings className="h-4 w-4 mr-2" />
-                  Preferences
+                  Settings
                 </TabsTrigger>
               </TabsList>
 
@@ -396,44 +396,6 @@ const Profile = () => {
               </TabsContent>
 
               <TabsContent value="preferences" className="space-y-6">
-                <Card className="glass-card">
-                  <CardHeader>
-                    <CardTitle>Display Settings</CardTitle>
-                    <CardDescription>Customize how Quantica Capital looks and feels</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium">Night Mode</h3>
-                          <p className="text-sm text-muted-foreground">Use dark theme</p>
-                        </div>
-                        <div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" value="" className="sr-only peer" checked readOnly />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                          </label>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-4">
-                        <div>
-                          <h3 className="font-medium">Notifications</h3>
-                          <p className="text-sm text-muted-foreground">Receive price alerts and updates</p>
-                        </div>
-                        <div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" value="" className="sr-only peer" checked readOnly />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                          </label>
-                        </div>
-                      </div>
-                      <div className="pt-4">
-                        <Button>Save Preferences</Button>
-                      </div>
-                    </form>
-                  </CardContent>
-                </Card>
-
                 <Card className="glass-card border-red-200">
                   <CardHeader>
                     <CardTitle className="text-red-600">Danger Zone</CardTitle>
