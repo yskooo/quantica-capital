@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -23,19 +22,17 @@ const formatDateForMySQL = (dateString) => {
   return date.toISOString().split('T')[0];
 };
 
-// Registration endpoint - with simplified validation
+// Registration endpoint - simplified validation for CRUD project
 router.post('/register', [
-  // Make email optional
-  body('credentials.email').optional().isEmail().normalizeEmail(),
-  // Basic password validation
-  body('credentials.password').isLength({ min: 4 }),
-  // Require name
-  body('personalData.P_Name').notEmpty(),
-  // Remove strict validation on phone
-  body('personalData.P_Cell_Number').exists(),
+  // Basic validation - make sure required fields exist
+  body('credentials.password').optional().isLength({ min: 4 }),
+  body('personalData.P_Name').notEmpty().withMessage('Name is required'),
+  body('personalData.P_Cell_Number').notEmpty().withMessage('Phone number is required'),
 ], async (req, res) => {
   try {
-    // Validate input - we'll keep this simple
+    console.log('Registration request body:', req.body);
+    
+    // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log('Validation errors:', errors.array());

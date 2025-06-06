@@ -8,13 +8,17 @@ export const registrationService = {
     console.log("Registering user with data:", registrationData);
     
     try {
-      // Format data according to backend expectations
+      // Format data to match exactly what backend validation expects
       const formattedData = {
+        credentials: {
+          email: registrationData.credentials?.email || null,
+          password: registrationData.credentials?.password
+        },
         personalData: {
           P_Name: registrationData.personalData?.P_Name,
           P_Address: registrationData.personalData?.P_Address,
           P_Postal_Code: registrationData.personalData?.P_Postal_Code,
-          P_Cell_Number: registrationData.personalData?.P_Cell_Number, // No need to convert, backend will handle
+          P_Cell_Number: registrationData.personalData?.P_Cell_Number,
           Date_of_Birth: registrationData.personalData?.Date_of_Birth,
           Employment_Status: registrationData.personalData?.Employment_Status,
           Purpose_of_Opening: registrationData.personalData?.Purpose_of_Opening
@@ -43,11 +47,7 @@ export const registrationService = {
             C_Email: contact.contactDetails.C_Email,
             C_Contact_Number: contact.contactDetails.C_Contact_Number
           }
-        })) || [],
-        credentials: registrationData.credentials ? {
-          email: registrationData.credentials.email,
-          password: registrationData.credentials.password
-        } : undefined
+        })) || []
       };
 
       console.log("Formatted data being sent:", formattedData);
