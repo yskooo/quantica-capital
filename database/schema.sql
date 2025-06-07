@@ -102,8 +102,13 @@ ADD CONSTRAINT `fk_contact_person_contact_id`
   ON DELETE RESTRICT
   ON UPDATE RESTRICT;
 
+-- Add P_Password column if it doesn't exist (for existing databases)
+ALTER TABLE `personal_data` 
+ADD COLUMN IF NOT EXISTS `P_Password` VARCHAR(255) NULL AFTER `P_Email`;
+
 -- Insert some sample bank data for testing
 INSERT INTO `bank_details` (`Bank_Acc_No`, `Bank_Acc_Name`, `Bank_Acc_Date_of_Opening`, `Bank_Name`, `Branch`) VALUES
 ('1234567890123456789', 'John Doe', '2023-01-15', 'Chase Bank', 'Main Street Branch'),
 ('9876543210987654321', 'Jane Smith', '2023-02-20', 'Wells Fargo', 'Downtown Branch'),
-('1111222233334444555', 'Bob Johnson', '2023-03-10', 'Bank of America', 'Uptown Branch');
+('1111222233334444555', 'Bob Johnson', '2023-03-10', 'Bank of America', 'Uptown Branch')
+ON DUPLICATE KEY UPDATE Bank_Acc_Name = VALUES(Bank_Acc_Name);
