@@ -43,7 +43,7 @@ CREATE TABLE `source_of_funding` (
   UNIQUE INDEX `Funding_ID_UNIQUE` (`Funding_ID` ASC) VISIBLE
 );
 
--- Table: personal_data (now includes credentials)
+-- Table: personal_data (includes credentials)
 CREATE TABLE `personal_data` (
   `Acc_ID` CHAR(4) NOT NULL,
   `P_Name` VARCHAR(50) NULL,
@@ -101,10 +101,6 @@ ADD CONSTRAINT `fk_contact_person_contact_id`
   REFERENCES `contact_person_details` (`Contact_ID`)
   ON DELETE RESTRICT
   ON UPDATE RESTRICT;
-
--- Add P_Password column if it doesn't exist (for existing databases)
-ALTER TABLE `personal_data` 
-ADD COLUMN IF NOT EXISTS `P_Password` VARCHAR(255) NULL AFTER `P_Email`;
 
 -- Insert some sample bank data for testing
 INSERT INTO `bank_details` (`Bank_Acc_No`, `Bank_Acc_Name`, `Bank_Acc_Date_of_Opening`, `Bank_Name`, `Branch`) VALUES
