@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,13 +59,23 @@ const Profile = () => {
 
   const formatDateForDisplay = (dateString: string) => {
     if (!dateString) return "";
-    // If it's already in YYYY-MM-DD format, return as is
+    
+    // Handle different date formats
+    let date;
+    
+    // If it's already in YYYY-MM-DD format
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return dateString;
+      date = new Date(dateString + 'T00:00:00');
+    } 
+    // If it's an ISO string or other format
+    else {
+      date = new Date(dateString);
     }
-    // Convert ISO date to YYYY-MM-DD
-    const date = new Date(dateString);
+    
+    // Check if date is valid
     if (isNaN(date.getTime())) return "";
+    
+    // Return in YYYY-MM-DD format for input fields
     return date.toISOString().split('T')[0];
   };
 
@@ -257,7 +266,7 @@ const Profile = () => {
                           id="dateOfBirth" 
                           name="dateOfBirth"
                           type="date"
-                          defaultValue={formatDateForDisplay(userProfile?.personalData?.Date_of_Birth || "")} 
+                          defaultValue={formatDateForDisplay(userProfile?.personalData?.Date_of_Birth)} 
                         />
                       </div>
                       <div className="space-y-2">
@@ -343,7 +352,7 @@ const Profile = () => {
                           id="accountOpeningDate" 
                           name="accountOpeningDate"
                           type="date"
-                          defaultValue={formatDateForDisplay(userProfile?.bankDetails?.Bank_Acc_Date_of_Opening || "")} 
+                          defaultValue={formatDateForDisplay(userProfile?.bankDetails?.Bank_Acc_Date_of_Opening)} 
                         />
                       </div>
                       <div className="pt-4">
