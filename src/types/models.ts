@@ -35,11 +35,14 @@ export interface PersonalData {
   P_Postal_Code?: string; // CHAR(5)
   P_Cell_Number: number; // BIGINT
   P_Email?: string; // VARCHAR(60)
+  P_Password?: string; // VARCHAR(255) - credentials now stored here
   Date_of_Birth?: string; // DATE
   Employment_Status?: 'Employed' | 'Self-Employed' | 'Unemployed' | 'Student' | 'Retired';
   Purpose_of_Opening?: 'Savings' | 'Investment' | 'Business' | 'Personal Use' | 'Retirement' | 'Others';
   Funding_ID: string; // CHAR(7) FOREIGN KEY
   Bank_Acc_No: string; // VARCHAR(45) FOREIGN KEY
+  created_at?: string; // TIMESTAMP
+  updated_at?: string; // TIMESTAMP
 }
 
 export interface RoleOfContact {
@@ -58,7 +61,7 @@ export interface ContactRole {
 
 // Complete registration data structure
 export interface RegistrationData {
-  personalData: Omit<PersonalData, 'Acc_ID' | 'Funding_ID' | 'Bank_Acc_No'>;
+  personalData: Omit<PersonalData, 'Acc_ID' | 'Funding_ID' | 'Bank_Acc_No' | 'P_Password'>;
   bankDetails: Omit<BankDetails, 'Bank_Acc_No'>;
   sourceOfFunding: Omit<SourceOfFunding, 'Funding_ID'>;
   contacts: Array<ContactRole>;

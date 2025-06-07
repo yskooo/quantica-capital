@@ -1,3 +1,4 @@
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -22,12 +23,13 @@ const formatDateForMySQL = (dateString) => {
   return date.toISOString().split('T')[0];
 };
 
-// Registration endpoint - simplified validation for CRUD project
+// Registration endpoint - require minimum 3 contacts
 router.post('/register', [
   // Basic validation - make sure required fields exist
   body('credentials.password').optional().isLength({ min: 4 }),
   body('personalData.P_Name').notEmpty().withMessage('Name is required'),
   body('personalData.P_Cell_Number').notEmpty().withMessage('Phone number is required'),
+  body('contacts').isArray({ min: 3 }).withMessage('Minimum 3 contacts required'),
 ], async (req, res) => {
   try {
     console.log('Registration request body:', req.body);
@@ -41,10 +43,16 @@ router.post('/register', [
 
     const { personalData, bankDetails, sourceOfFunding, contacts, credentials } = req.body;
 
+    // Validate minimum 3 contacts
+    if (!contacts || contacts.length < 3) {
+      return res.status(400).json({ error: 'Minimum 3 contacts required for registration' });
+    }
+
     console.log('Registration request received:', {
       email: credentials?.email || 'No email provided',
       phone: personalData.P_Cell_Number,
-      name: personalData.P_Name
+      name: personalData.P_Name,
+      contactsCount: contacts.length
     });
 
     // Check if phone number already exists
@@ -120,11 +128,11 @@ router.post('/register', [
         ]
       );
 
-      // Insert personal data
+      // Insert personal data with password
       await connection.execute(
-        `INSERT INTO personal_data (Acc_ID, P_Name, P_Address, P_Postal_Code, P_Cell_Number, P_Email, 
+        `INSERT INTO personal_data (Acc_ID, P_Name, P_Address, P_Postal_Code, P_Cell_Number, P_Email, P_Password,
          Date_of_Birth, Employment_Status, Purpose_of_Opening, Funding_ID, Bank_Acc_No) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           accId,
           personalData.P_Name,
@@ -132,6 +140,7 @@ router.post('/register', [
           personalData.P_Postal_Code,
           personalData.P_Cell_Number,
           credentials?.email || null,
+          hashedPassword,
           dateOfBirth,
           personalData.Employment_Status || 'Student',
           personalData.Purpose_of_Opening || 'Personal Use',
@@ -163,25 +172,6 @@ router.post('/register', [
           `INSERT INTO role_of_contact (Acc_ID, C_Role, Contact_ID, C_Relationship) 
            VALUES (?, ?, ?, ?)`,
           [accId, contact.role, contactId, contact.relationship || 'Friend']
-        );
-      }
-
-      // Create user_auth table if it doesn't exist
-      await connection.execute(
-        `CREATE TABLE IF NOT EXISTS user_auth (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          acc_id CHAR(4) UNIQUE,
-          email VARCHAR(60) UNIQUE,
-          password_hash VARCHAR(255),
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )`
-      );
-
-      if (credentials?.email && hashedPassword) {
-        // Store password hash
-        await connection.execute(
-          'INSERT INTO user_auth (acc_id, email, password_hash) VALUES (?, ?, ?)',
-          [accId, credentials.email, hashedPassword]
         );
       }
 
@@ -237,48 +227,25 @@ router.post('/login', [
 
     // Try to find user by email first if provided
     if (email) {
-      // Get user authentication data by email
-      const [authRows] = await pool.execute(
-        'SELECT acc_id, email, password_hash FROM user_auth WHERE email = ?',
+      const [rows] = await pool.execute(
+        'SELECT * FROM personal_data WHERE P_Email = ?',
         [email]
       );
       
-      if (authRows.length > 0) {
-        user = authRows[0];
+      if (rows.length > 0) {
+        user = rows[0];
       }
     }
 
     // If no user found by email and phone provided, try to find by phone
     if (!user && phone) {
-      // Get account ID from personal data by phone number
-      const [profileRows] = await pool.execute(
-        'SELECT Acc_ID, P_Email FROM personal_data WHERE P_Cell_Number = ?',
+      const [rows] = await pool.execute(
+        'SELECT * FROM personal_data WHERE P_Cell_Number = ?',
         [phone]
       );
       
-      if (profileRows.length > 0) {
-        const accId = profileRows[0].Acc_ID;
-        const userEmail = profileRows[0].P_Email;
-        
-        // Get auth info using the account ID
-        const [authRows] = await pool.execute(
-          'SELECT acc_id, email, password_hash FROM user_auth WHERE acc_id = ?',
-          [accId]
-        );
-        
-        if (authRows.length > 0) {
-          user = authRows[0];
-        } else if (userEmail) {
-          // Try by email from personal_data if no direct auth entry
-          const [authByEmailRows] = await pool.execute(
-            'SELECT acc_id, email, password_hash FROM user_auth WHERE email = ?',
-            [userEmail]
-          );
-          
-          if (authByEmailRows.length > 0) {
-            user = authByEmailRows[0];
-          }
-        }
+      if (rows.length > 0) {
+        user = rows[0];
       }
     }
 
@@ -287,26 +254,18 @@ router.post('/login', [
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    if (!user.P_Password) {
+      return res.status(401).json({ error: 'No password set for this account' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.P_Password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Get user profile data
-    const [profileRows] = await pool.execute(
-      'SELECT * FROM personal_data WHERE Acc_ID = ?',
-      [user.acc_id]
-    );
-
-    if (profileRows.length === 0) {
-      return res.status(404).json({ error: 'User profile not found' });
-    }
-
-    const profile = profileRows[0];
-
     // Generate JWT token
     const token = jwt.sign(
-      { accId: user.acc_id, email: profile.P_Email, phone: profile.P_Cell_Number },
+      { accId: user.Acc_ID, email: user.P_Email, phone: user.P_Cell_Number },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
@@ -315,11 +274,11 @@ router.post('/login', [
       message: 'Login successful',
       data: {
         user: {
-          accId: profile.Acc_ID,
-          email: profile.P_Email || null,
-          name: profile.P_Name,
-          phone: profile.P_Cell_Number,
-          address: profile.P_Address || null
+          accId: user.Acc_ID,
+          email: user.P_Email || null,
+          name: user.P_Name,
+          phone: user.P_Cell_Number,
+          address: user.P_Address || null
         },
         token
       }

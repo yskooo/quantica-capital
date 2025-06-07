@@ -43,7 +43,7 @@ CREATE TABLE `source_of_funding` (
   UNIQUE INDEX `Funding_ID_UNIQUE` (`Funding_ID` ASC) VISIBLE
 );
 
--- Table: personal_data
+-- Table: personal_data (now includes credentials)
 CREATE TABLE `personal_data` (
   `Acc_ID` CHAR(4) NOT NULL,
   `P_Name` VARCHAR(50) NULL,
@@ -51,11 +51,14 @@ CREATE TABLE `personal_data` (
   `P_Postal_Code` CHAR(5) NULL,
   `P_Cell_Number` BIGINT NOT NULL,
   `P_Email` VARCHAR(60) NULL,
+  `P_Password` VARCHAR(255) NULL,
   `Date_of_Birth` DATE NULL,
   `Employment_Status` ENUM('Employed', 'Self-Employed', 'Unemployed', 'Student', 'Retired') NULL,
   `Purpose_of_Opening` ENUM('Savings', 'Investment', 'Business', 'Personal Use', 'Retirement', 'Others') NULL,
   `Funding_ID` CHAR(7) NOT NULL,
   `Bank_Acc_No` VARCHAR(45) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`Acc_ID`),
   UNIQUE INDEX `Acc_ID_UNIQUE` (`Acc_ID` ASC) VISIBLE,
   UNIQUE INDEX `P_Cell_Number_UNIQUE` (`P_Cell_Number` ASC) VISIBLE,
@@ -72,16 +75,6 @@ CREATE TABLE `role_of_contact` (
   `C_Relationship` ENUM('Father', 'Mother', 'Spouse', 'Son', 'Daughter', 'Friend', 'Colleague', 'Mentor', 'Others') NULL,
   PRIMARY KEY (`Acc_ID`, `C_Role`, `Contact_ID`),
   INDEX `Contact_ID_idx` (`Contact_ID` ASC) VISIBLE
-);
-
--- Create user authentication table
-CREATE TABLE `user_auth` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `acc_id` CHAR(4) UNIQUE,
-  `email` VARCHAR(60) UNIQUE,
-  `password_hash` VARCHAR(255),
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Foreign Key Constraints

@@ -1,6 +1,6 @@
 
 const express = require('express');
-const { pool } = require('../config/database');
+const { pool, generateContactId } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -199,6 +199,185 @@ router.put('/profile/:accId', authenticateToken, async (req, res) => {
   }
 });
 
+// Add new contact
+router.post('/profile/:accId/contacts', authenticateToken, async (req, res) => {
+  try {
+    const { accId } = req.params;
+    const { contactDetails, role, relationship } = req.body;
+
+    console.log('Adding contact:', { accId, contactDetails, role, relationship });
+
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      const contactId = await generateContactId();
+
+      // Insert contact details
+      await connection.execute(
+        `INSERT INTO contact_person_details (Contact_ID, C_Name, C_Address, C_Postal_Code, C_Email, C_Contact_Number) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          contactId,
+          contactDetails.C_Name,
+          contactDetails.C_Address,
+          contactDetails.C_Postal_Code,
+          contactDetails.C_Email || null,
+          contactDetails.C_Contact_Number
+        ]
+      );
+
+      // Insert role of contact
+      await connection.execute(
+        `INSERT INTO role_of_contact (Acc_ID, C_Role, Contact_ID, C_Relationship) 
+         VALUES (?, ?, ?, ?)`,
+        [accId, role, contactId, relationship || 'Friend']
+      );
+
+      await connection.commit();
+      res.json({ message: 'Contact added successfully', contactId });
+
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+
+  } catch (error) {
+    console.error('Add contact error:', error);
+    res.status(500).json({ error: 'Failed to add contact', message: error.message });
+  }
+});
+
+// Update contact
+router.put('/profile/:accId/contacts/:contactId', authenticateToken, async (req, res) => {
+  try {
+    const { accId, contactId } = req.params;
+    const { contactDetails, role, relationship } = req.body;
+
+    console.log('Updating contact:', { accId, contactId, contactDetails, role, relationship });
+
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Update contact details
+      if (contactDetails) {
+        const updateFields = {};
+        
+        if (contactDetails.C_Name !== undefined) updateFields.C_Name = contactDetails.C_Name;
+        if (contactDetails.C_Address !== undefined) updateFields.C_Address = contactDetails.C_Address;
+        if (contactDetails.C_Postal_Code !== undefined) updateFields.C_Postal_Code = contactDetails.C_Postal_Code;
+        if (contactDetails.C_Email !== undefined) updateFields.C_Email = contactDetails.C_Email;
+        if (contactDetails.C_Contact_Number !== undefined) updateFields.C_Contact_Number = contactDetails.C_Contact_Number;
+        
+        const fields = Object.keys(updateFields);
+        if (fields.length > 0) {
+          const setClause = fields.map(field => `${field} = ?`).join(', ');
+          const values = fields.map(field => updateFields[field]);
+          
+          await connection.execute(
+            `UPDATE contact_person_details SET ${setClause} WHERE Contact_ID = ?`,
+            [...values, contactId]
+          );
+        }
+      }
+
+      // Update role of contact
+      if (role !== undefined || relationship !== undefined) {
+        const updateFields = {};
+        
+        if (role !== undefined) updateFields.C_Role = role;
+        if (relationship !== undefined) updateFields.C_Relationship = relationship;
+        
+        const fields = Object.keys(updateFields);
+        if (fields.length > 0) {
+          const setClause = fields.map(field => `${field} = ?`).join(', ');
+          const values = fields.map(field => updateFields[field]);
+          
+          await connection.execute(
+            `UPDATE role_of_contact SET ${setClause} WHERE Acc_ID = ? AND Contact_ID = ?`,
+            [...values, accId, contactId]
+          );
+        }
+      }
+
+      await connection.commit();
+      res.json({ message: 'Contact updated successfully' });
+
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+
+  } catch (error) {
+    console.error('Update contact error:', error);
+    res.status(500).json({ error: 'Failed to update contact', message: error.message });
+  }
+});
+
+// Delete contact (with minimum 3 contacts validation)
+router.delete('/profile/:accId/contacts/:contactId', authenticateToken, async (req, res) => {
+  try {
+    const { accId, contactId } = req.params;
+
+    console.log('Deleting contact:', { accId, contactId });
+
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Check current contact count
+      const [contactCount] = await connection.execute(
+        'SELECT COUNT(*) as count FROM role_of_contact WHERE Acc_ID = ?',
+        [accId]
+      );
+
+      if (contactCount[0].count <= 3) {
+        await connection.rollback();
+        connection.release();
+        return res.status(400).json({ error: 'Cannot delete contact. Minimum 3 contacts required.' });
+      }
+
+      // Delete from role_of_contact first
+      await connection.execute(
+        'DELETE FROM role_of_contact WHERE Acc_ID = ? AND Contact_ID = ?',
+        [accId, contactId]
+      );
+
+      // Check if contact is used by other accounts
+      const [otherReferences] = await connection.execute(
+        'SELECT COUNT(*) as count FROM role_of_contact WHERE Contact_ID = ?',
+        [contactId]
+      );
+
+      // If no other references, delete the contact details
+      if (otherReferences[0].count === 0) {
+        await connection.execute(
+          'DELETE FROM contact_person_details WHERE Contact_ID = ?',
+          [contactId]
+        );
+      }
+
+      await connection.commit();
+      res.json({ message: 'Contact deleted successfully' });
+
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+
+  } catch (error) {
+    console.error('Delete contact error:', error);
+    res.status(500).json({ error: 'Failed to delete contact', message: error.message });
+  }
+});
+
 // Delete user account
 router.delete('/profile/:accId', authenticateToken, async (req, res) => {
   try {
@@ -224,23 +403,23 @@ router.delete('/profile/:accId', authenticateToken, async (req, res) => {
 
       const personal = personalRows[0];
 
-      // Delete contacts associated with this account first
-      await connection.execute(
-        'DELETE FROM role_of_contact WHERE Acc_ID = ?',
-        [accId]
-      );
-
       // Get contact IDs that might need to be deleted if they're not referenced elsewhere
       const [contactIds] = await connection.execute(
         'SELECT DISTINCT Contact_ID FROM role_of_contact WHERE Acc_ID = ?',
         [accId]
       );
 
+      // Delete contacts associated with this account first
+      await connection.execute(
+        'DELETE FROM role_of_contact WHERE Acc_ID = ?',
+        [accId]
+      );
+
       // Delete contact person details for contacts that are only linked to this account
       for (const contact of contactIds) {
         const [otherReferences] = await connection.execute(
-          'SELECT COUNT(*) as count FROM role_of_contact WHERE Contact_ID = ? AND Acc_ID != ?',
-          [contact.Contact_ID, accId]
+          'SELECT COUNT(*) as count FROM role_of_contact WHERE Contact_ID = ?',
+          [contact.Contact_ID]
         );
 
         if (otherReferences[0].count === 0) {
@@ -272,12 +451,6 @@ router.delete('/profile/:accId', authenticateToken, async (req, res) => {
           [personal.Funding_ID]
         );
       }
-
-      // Delete from user_auth table (if it exists)
-      await connection.execute(
-        'DELETE FROM user_auth WHERE acc_id = ?',
-        [accId]
-      );
 
       await connection.commit();
       res.json({ message: 'Account deleted successfully' });

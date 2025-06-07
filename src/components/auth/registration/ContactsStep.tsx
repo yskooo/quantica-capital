@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
-import { Plus, Save, Trash } from "lucide-react";
+import { Plus, Save, Trash, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +41,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ContactRole } from "@/types/models";
 import { Badge } from "@/components/ui/badge";
 
@@ -135,10 +136,20 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
 
   return (
     <div className="space-y-6">
+      {/* Minimum contacts requirement alert */}
+      <Alert className={contacts.length < 3 ? "border-orange-200 bg-orange-50" : "border-green-200 bg-green-50"}>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Contact Requirements</AlertTitle>
+        <AlertDescription>
+          You need to add at least 3 contacts to proceed. 
+          Current contacts: {contacts.length}/3 minimum required.
+        </AlertDescription>
+      </Alert>
+
       {/* Contact List */}
       {contacts.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Added Contacts</h3>
+          <h3 className="text-lg font-medium">Added Contacts ({contacts.length})</h3>
           <div className="grid grid-cols-1 gap-4">
             {contacts.map((contact, index) => (
               <Card key={index} className="bg-card/50">
@@ -380,9 +391,9 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
         
         <Button 
           onClick={() => onNext(contacts)} 
-          disabled={contacts.length === 0}
+          disabled={contacts.length < 3}
         >
-          Continue
+          Continue {contacts.length < 3 && `(${3 - contacts.length} more contacts needed)`}
         </Button>
       </div>
     </div>

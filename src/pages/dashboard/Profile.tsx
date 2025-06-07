@@ -4,13 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Wallet, Settings, Loader2, Trash2, Users } from "lucide-react";
+import { User, Wallet, Settings, Loader2, Trash2, Users, Plus, Edit, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { userAPI } from "@/services/api/core";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Profile = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -19,6 +27,20 @@ const Profile = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  // Contact management states
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [editingContact, setEditingContact] = useState<any>(null);
+  const [contactForm, setContactForm] = useState({
+    C_Name: '',
+    C_Email: '',
+    C_Contact_Number: '',
+    C_Address: '',
+    C_Postal_Code: '',
+    role: 'Kin',
+    relationship: 'Friend'
+  });
+  
   const navigate = useNavigate();
 
   // Load user profile data on component mount
@@ -113,6 +135,136 @@ const Profile = () => {
       toast.error("Failed to update profile");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  // Contact management functions
+  const resetContactForm = () => {
+    setContactForm({
+      C_Name: '',
+      C_Email: '',
+      C_Contact_Number: '',
+      C_Address: '',
+      C_Postal_Code: '',
+      role: 'Kin',
+      relationship: 'Friend'
+    });
+    setEditingContact(null);
+    setShowContactForm(false);
+  };
+
+  const handleContactFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (!userData) return;
+
+      const user = JSON.parse(userData);
+      
+      if (editingContact) {
+        // Update existing contact
+        const response = await fetch(`http://localhost:3001/api/users/profile/${user.accId}/contacts/${editingContact.Contact_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({
+            contactDetails: {
+              C_Name: contactForm.C_Name,
+              C_Email: contactForm.C_Email,
+              C_Contact_Number: contactForm.C_Contact_Number,
+              C_Address: contactForm.C_Address,
+              C_Postal_Code: contactForm.C_Postal_Code
+            },
+            role: contactForm.role,
+            relationship: contactForm.relationship
+          })
+        });
+
+        if (response.ok) {
+          toast.success("Contact updated successfully!");
+          loadUserProfile();
+          resetContactForm();
+        } else {
+          const errorData = await response.json();
+          toast.error("Failed to update contact", { description: errorData.error });
+        }
+      } else {
+        // Add new contact
+        const response = await fetch(`http://localhost:3001/api/users/profile/${user.accId}/contacts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({
+            contactDetails: {
+              C_Name: contactForm.C_Name,
+              C_Email: contactForm.C_Email,
+              C_Contact_Number: contactForm.C_Contact_Number,
+              C_Address: contactForm.C_Address,
+              C_Postal_Code: contactForm.C_Postal_Code
+            },
+            role: contactForm.role,
+            relationship: contactForm.relationship
+          })
+        });
+
+        if (response.ok) {
+          toast.success("Contact added successfully!");
+          loadUserProfile();
+          resetContactForm();
+        } else {
+          const errorData = await response.json();
+          toast.error("Failed to add contact", { description: errorData.error });
+        }
+      }
+    } catch (error) {
+      console.error("Contact operation error:", error);
+      toast.error("Failed to save contact");
+    }
+  };
+
+  const handleEditContact = (contact: any) => {
+    setContactForm({
+      C_Name: contact.C_Name || '',
+      C_Email: contact.C_Email || '',
+      C_Contact_Number: contact.C_Contact_Number || '',
+      C_Address: contact.C_Address || '',
+      C_Postal_Code: contact.C_Postal_Code || '',
+      role: contact.C_Role || 'Kin',
+      relationship: contact.C_Relationship || 'Friend'
+    });
+    setEditingContact(contact);
+    setShowContactForm(true);
+  };
+
+  const handleDeleteContact = async (contact: any) => {
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (!userData) return;
+
+      const user = JSON.parse(userData);
+      
+      const response = await fetch(`http://localhost:3001/api/users/profile/${user.accId}/contacts/${contact.Contact_ID}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success("Contact deleted successfully!");
+        loadUserProfile();
+      } else {
+        const errorData = await response.json();
+        toast.error("Failed to delete contact", { description: errorData.error });
+      }
+    } catch (error) {
+      console.error("Delete contact error:", error);
+      toast.error("Failed to delete contact");
     }
   };
 
@@ -445,31 +597,158 @@ const Profile = () => {
               <TabsContent value="contacts" className="space-y-6">
                 <Card className="glass-card">
                   <CardHeader>
-                    <CardTitle>Emergency Contacts & References</CardTitle>
-                    <CardDescription>View your registered contacts and references</CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle>Emergency Contacts & References</CardTitle>
+                        <CardDescription>
+                          Manage your contacts (minimum 3 required)
+                        </CardDescription>
+                      </div>
+                      <Button onClick={() => setShowContactForm(true)} disabled={showContactForm}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Contact
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
+                    {showContactForm && (
+                      <Card className="mb-6 border-2 border-primary/20">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg">
+                              {editingContact ? 'Edit Contact' : 'Add New Contact'}
+                            </CardTitle>
+                            <Button variant="ghost" size="sm" onClick={resetContactForm}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <form onSubmit={handleContactFormSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="contactRole">Role</Label>
+                                <Select value={contactForm.role} onValueChange={(value) => setContactForm(prev => ({ ...prev, role: value }))}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Kin">Kin (Emergency Contact)</SelectItem>
+                                    <SelectItem value="Referee 1">Referee 1</SelectItem>
+                                    <SelectItem value="Referee 2">Referee 2</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="contactRelationship">Relationship</Label>
+                                <Select value={contactForm.relationship} onValueChange={(value) => setContactForm(prev => ({ ...prev, relationship: value }))}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Father">Father</SelectItem>
+                                    <SelectItem value="Mother">Mother</SelectItem>
+                                    <SelectItem value="Spouse">Spouse</SelectItem>
+                                    <SelectItem value="Son">Son</SelectItem>
+                                    <SelectItem value="Daughter">Daughter</SelectItem>
+                                    <SelectItem value="Friend">Friend</SelectItem>
+                                    <SelectItem value="Colleague">Colleague</SelectItem>
+                                    <SelectItem value="Mentor">Mentor</SelectItem>
+                                    <SelectItem value="Others">Others</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="contactName">Full Name</Label>
+                              <Input 
+                                id="contactName"
+                                value={contactForm.C_Name}
+                                onChange={(e) => setContactForm(prev => ({ ...prev, C_Name: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="contactEmail">Email</Label>
+                              <Input 
+                                id="contactEmail"
+                                type="email"
+                                value={contactForm.C_Email}
+                                onChange={(e) => setContactForm(prev => ({ ...prev, C_Email: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="contactPhone">Phone Number</Label>
+                              <Input 
+                                id="contactPhone"
+                                value={contactForm.C_Contact_Number}
+                                onChange={(e) => setContactForm(prev => ({ ...prev, C_Contact_Number: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="contactAddress">Address</Label>
+                              <Input 
+                                id="contactAddress"
+                                value={contactForm.C_Address}
+                                onChange={(e) => setContactForm(prev => ({ ...prev, C_Address: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="contactPostalCode">Postal Code</Label>
+                              <Input 
+                                id="contactPostalCode"
+                                value={contactForm.C_Postal_Code}
+                                onChange={(e) => setContactForm(prev => ({ ...prev, C_Postal_Code: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            
+                            <div className="flex gap-2 pt-4">
+                              <Button type="button" variant="outline" onClick={resetContactForm}>
+                                Cancel
+                              </Button>
+                              <Button type="submit">
+                                <Save className="h-4 w-4 mr-2" />
+                                {editingContact ? 'Update Contact' : 'Save Contact'}
+                              </Button>
+                            </div>
+                          </form>
+                        </CardContent>
+                      </Card>
+                    )}
+
                     {userProfile?.contacts && userProfile.contacts.length > 0 ? (
                       <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Total contacts: {userProfile.contacts.length} (minimum 3 required)
+                        </p>
                         {userProfile.contacts.map((contact: any, index: number) => (
                           <Card key={index} className="bg-muted/50">
                             <CardHeader className="pb-2">
                               <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg">{contact.C_Name}</CardTitle>
                                 <div className="flex gap-2">
-                                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                  <Badge variant="outline" className="font-medium">
                                     {contact.C_Role}
-                                  </span>
+                                  </Badge>
                                   {contact.C_Relationship && (
-                                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
+                                    <Badge variant="secondary">
                                       {contact.C_Relationship}
-                                    </span>
+                                    </Badge>
                                   )}
                                 </div>
                               </div>
                             </CardHeader>
                             <CardContent className="pt-0">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
                                 <div>
                                   <Label className="text-muted-foreground">Email</Label>
                                   <p>{contact.C_Email}</p>
@@ -486,6 +765,50 @@ const Profile = () => {
                                   )}
                                 </div>
                               </div>
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditContact(contact)}
+                                  disabled={showContactForm}
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      variant="destructive" 
+                                      size="sm"
+                                      disabled={userProfile.contacts.length <= 3}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Delete Contact</DialogTitle>
+                                      <DialogDescription>
+                                        Are you sure you want to delete {contact.C_Name}? This action cannot be undone.
+                                        {userProfile.contacts.length <= 3 && 
+                                          " You cannot delete this contact as you need a minimum of 3 contacts."
+                                        }
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter>
+                                      <Button variant="outline">Cancel</Button>
+                                      <Button 
+                                        variant="destructive" 
+                                        onClick={() => handleDeleteContact(contact)}
+                                        disabled={userProfile.contacts.length <= 3}
+                                      >
+                                        Delete Contact
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
                             </CardContent>
                           </Card>
                         ))}
@@ -495,7 +818,7 @@ const Profile = () => {
                         <Users className="mx-auto h-12 w-12 text-muted-foreground" />
                         <h3 className="mt-2 text-sm font-medium text-muted-foreground">No contacts found</h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          You haven't added any emergency contacts or references yet.
+                          Add your first contact to get started.
                         </p>
                       </div>
                     )}
