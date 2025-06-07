@@ -1,15 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Wallet, Settings, Loader2, Trash2 } from "lucide-react";
+import { User, Wallet, Settings, Loader2, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
-// import Footer from "@/components/layout/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { userAPI } from "@/services/api/core";
 
@@ -55,6 +55,27 @@ const Profile = () => {
       toast.error("Failed to load profile data");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return "";
+    // If it's already in YYYY-MM-DD format, return as is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString;
+    }
+    // Convert ISO date to YYYY-MM-DD
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().split('T')[0];
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length <= 11) {
+      e.target.value = value;
+    } else {
+      e.target.value = value.slice(0, 11);
     }
   };
 
@@ -126,7 +147,6 @@ const Profile = () => {
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
-        {/* <Footer /> */}
       </div>
     );
   }
@@ -152,6 +172,10 @@ const Profile = () => {
                 <TabsTrigger value="bank">
                   <Wallet className="h-4 w-4 mr-2" />
                   Bank & Funding
+                </TabsTrigger>
+                <TabsTrigger value="contacts">
+                  <Users className="h-4 w-4 mr-2" />
+                  Contacts
                 </TabsTrigger>
                 <TabsTrigger value="preferences">
                   <Settings className="h-4 w-4 mr-2" />
@@ -199,12 +223,17 @@ const Profile = () => {
                         <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
+                        <Label htmlFor="phone">Phone Number (11 digits max)</Label>
                         <Input 
                           id="phone" 
                           name="phone"
                           defaultValue={userProfile?.personalData?.P_Cell_Number || ""} 
+                          onChange={handlePhoneChange}
+                          maxLength={11}
+                          pattern="[0-9]{11}"
+                          placeholder="09123456789"
                         />
+                        <p className="text-xs text-muted-foreground">Enter 11-digit phone number</p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address">Address</Label>
@@ -228,7 +257,7 @@ const Profile = () => {
                           id="dateOfBirth" 
                           name="dateOfBirth"
                           type="date"
-                          defaultValue={userProfile?.personalData?.Date_of_Birth || ""} 
+                          defaultValue={formatDateForDisplay(userProfile?.personalData?.Date_of_Birth || "")} 
                         />
                       </div>
                       <div className="space-y-2">
@@ -306,6 +335,15 @@ const Profile = () => {
                           id="branch" 
                           name="branch"
                           defaultValue={userProfile?.bankDetails?.Branch || ""} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="accountOpeningDate">Account Opening Date</Label>
+                        <Input 
+                          id="accountOpeningDate" 
+                          name="accountOpeningDate"
+                          type="date"
+                          defaultValue={formatDateForDisplay(userProfile?.bankDetails?.Bank_Acc_Date_of_Opening || "")} 
                         />
                       </div>
                       <div className="pt-4">
@@ -395,6 +433,67 @@ const Profile = () => {
                 </Card>
               </TabsContent>
 
+              <TabsContent value="contacts" className="space-y-6">
+                <Card className="glass-card">
+                  <CardHeader>
+                    <CardTitle>Emergency Contacts & References</CardTitle>
+                    <CardDescription>View your registered contacts and references</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {userProfile?.contacts && userProfile.contacts.length > 0 ? (
+                      <div className="space-y-4">
+                        {userProfile.contacts.map((contact: any, index: number) => (
+                          <Card key={index} className="bg-muted/50">
+                            <CardHeader className="pb-2">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg">{contact.C_Name}</CardTitle>
+                                <div className="flex gap-2">
+                                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                    {contact.C_Role}
+                                  </span>
+                                  {contact.C_Relationship && (
+                                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
+                                      {contact.C_Relationship}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <Label className="text-muted-foreground">Email</Label>
+                                  <p>{contact.C_Email}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-muted-foreground">Phone</Label>
+                                  <p>{contact.C_Contact_Number}</p>
+                                </div>
+                                <div className="md:col-span-2">
+                                  <Label className="text-muted-foreground">Address</Label>
+                                  <p>{contact.C_Address}</p>
+                                  {contact.C_Postal_Code && (
+                                    <p className="text-muted-foreground">Postal Code: {contact.C_Postal_Code}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <h3 className="mt-2 text-sm font-medium text-muted-foreground">No contacts found</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          You haven't added any emergency contacts or references yet.
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               <TabsContent value="preferences" className="space-y-6">
                 <Card className="glass-card border-red-200">
                   <CardHeader>
@@ -446,7 +545,6 @@ const Profile = () => {
           </div>
         </main>
       </div>
-      {/* <Footer /> */}
     </div>
   );
 };

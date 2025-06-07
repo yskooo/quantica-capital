@@ -1,3 +1,4 @@
+
 const express = require('express');
 const { pool } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
@@ -223,7 +224,7 @@ router.delete('/profile/:accId', authenticateToken, async (req, res) => {
 
       const personal = personalRows[0];
 
-      // Delete contacts associated with this account
+      // Delete contacts associated with this account first
       await connection.execute(
         'DELETE FROM role_of_contact WHERE Acc_ID = ?',
         [accId]
@@ -272,9 +273,9 @@ router.delete('/profile/:accId', authenticateToken, async (req, res) => {
         );
       }
 
-      // Delete credentials
+      // Delete from user_auth table (if it exists)
       await connection.execute(
-        'DELETE FROM credentials WHERE Acc_ID = ?',
+        'DELETE FROM user_auth WHERE acc_id = ?',
         [accId]
       );
 
