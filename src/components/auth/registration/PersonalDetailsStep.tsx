@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -28,8 +27,8 @@ const personalSchema = z.object({
   P_Address: z.string().min(5, { message: "Please enter your full address." }),
   P_Postal_Code: z.string().min(3, { message: "Please enter a valid postal code." }),
   P_Cell_Number: z.string()
-    .min(10, { message: "Please enter a valid phone number." })
-    .regex(/^(09\d{9}|\+639\d{9})$/, { message: "Please use format: 09XXXXXXXXX or +639XXXXXXXXX" }),
+    .length(11, { message: "Phone number must be exactly 11 digits." })
+    .regex(/^09\d{9}$/, { message: "Please use format: 09XXXXXXXXX" }),
   Date_of_Birth: z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Please use format: YYYY-MM-DD" }),
   Employment_Status: z.enum(['Employed', 'Unemployed', 'Self-Employed', 'Student', 'Retired']),
@@ -57,6 +56,28 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
       Purpose_of_Opening: (defaultValues?.Purpose_of_Opening as any) || "Savings",
     },
   });
+
+  // Handle phone number input to restrict to 11 digits
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+    
+    // Limit to 11 digits
+    if (value.length > 11) {
+      value = value.slice(0, 11);
+    }
+    
+    // Ensure it starts with 09 if user types digits
+    if (value.length > 0 && !value.startsWith('09')) {
+      if (value.startsWith('9')) {
+        value = '0' + value;
+      } else if (value.length >= 2 && !value.startsWith('09')) {
+        // If user types something that doesn't start with 09, replace it
+        value = '09' + value.slice(2);
+      }
+    }
+    
+    onChange(value);
+  };
 
   function onSubmit(data: PersonalFormValues) {
     // Normalize phone number for backend validation
@@ -139,11 +160,13 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
                 <Input 
                   type="tel" 
                   placeholder="09171234567" 
-                  {...field} 
+                  maxLength={11}
+                  value={field.value}
+                  onChange={(e) => handlePhoneNumberChange(e, field.onChange)}
                 />
               </FormControl>
               <FormDescription>
-                Enter your mobile phone number (e.g., 09171234567 or +639171234567)
+                Enter your 11-digit mobile phone number (e.g., 09171234567)
               </FormDescription>
               <FormMessage />
             </FormItem>
