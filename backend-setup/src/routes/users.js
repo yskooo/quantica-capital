@@ -21,6 +21,29 @@ const formatDateForMySQL = (dateString) => {
   return date.toISOString().split('T')[0];
 };
 
+// Helper function to generate unique contact ID with retry
+const generateUniqueContactId = async (maxRetries = 10) => {
+  for (let i = 0; i < maxRetries; i++) {
+    const contactId = await generateContactId();
+    
+    // Check if this ID already exists
+    const [existing] = await pool.execute(
+      'SELECT Contact_ID FROM contact_person_details WHERE Contact_ID = ?',
+      [contactId]
+    );
+    
+    if (existing.length === 0) {
+      return contactId; // Found a unique ID
+    }
+    
+    console.log(`Contact ID ${contactId} already exists, retrying... (${i + 1}/${maxRetries})`);
+  }
+  
+  // If we still can't find a unique ID, generate a timestamp-based one
+  const timestamp = Date.now().toString().slice(-5);
+  return `C${timestamp}`;
+};
+
 // Get user profile
 router.get('/profile/:accId', authenticateToken, async (req, res) => {
   try {
@@ -199,7 +222,7 @@ router.put('/profile/:accId', authenticateToken, async (req, res) => {
   }
 });
 
-// Add new contact
+// Add new contact with improved ID generation
 router.post('/profile/:accId/contacts', authenticateToken, async (req, res) => {
   try {
     const { accId } = req.params;
@@ -211,9 +234,9 @@ router.post('/profile/:accId/contacts', authenticateToken, async (req, res) => {
     await connection.beginTransaction();
 
     try {
-      const contactId = await generateContactId();
+      const contactId = await generateUniqueContactId();
 
-      // Insert contact details
+      // Insert contact details with better error handling
       await connection.execute(
         `INSERT INTO contact_person_details (Contact_ID, C_Name, C_Address, C_Postal_Code, C_Email, C_Contact_Number) 
          VALUES (?, ?, ?, ?, ?, ?)`,
@@ -239,6 +262,52 @@ router.post('/profile/:accId/contacts', authenticateToken, async (req, res) => {
 
     } catch (error) {
       await connection.rollback();
+      
+      // If it's still a duplicate error, try one more time with a different approach
+      if (error.code === 'ER_DUP_ENTRY' && error.sqlMessage?.includes('contact_person_details.PRIMARY')) {
+        console.log('Duplicate contact ID error, trying with timestamp-based ID');
+        
+        const connection2 = await pool.getConnection();
+        await connection2.beginTransaction();
+        
+        try {
+          // Generate a timestamp-based unique ID
+          const timestamp = Date.now().toString();
+          const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+          const uniqueContactId = `C${timestamp.slice(-4)}${randomSuffix}`.slice(0, 5);
+          
+          await connection2.execute(
+            `INSERT INTO contact_person_details (Contact_ID, C_Name, C_Address, C_Postal_Code, C_Email, C_Contact_Number) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+              uniqueContactId,
+              contactDetails.C_Name,
+              contactDetails.C_Address,
+              contactDetails.C_Postal_Code,
+              contactDetails.C_Email || null,
+              contactDetails.C_Contact_Number
+            ]
+          );
+
+          await connection2.execute(
+            `INSERT INTO role_of_contact (Acc_ID, C_Role, Contact_ID, C_Relationship) 
+             VALUES (?, ?, ?, ?)`,
+            [accId, role, uniqueContactId, relationship || 'Friend']
+          );
+
+          await connection2.commit();
+          connection2.release();
+          
+          res.json({ message: 'Contact added successfully', contactId: uniqueContactId });
+          return;
+          
+        } catch (retryError) {
+          await connection2.rollback();
+          connection2.release();
+          throw retryError;
+        }
+      }
+      
       throw error;
     } finally {
       connection.release();
