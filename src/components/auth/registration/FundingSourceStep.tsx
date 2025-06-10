@@ -26,8 +26,10 @@ const fundingSchema = z.object({
   Nature_of_Work: z.string().min(2, { message: "Please enter your occupation or nature of work." }),
   'Business/School_Name': z.string().min(2, { message: "Please enter your company or school name." }),
   'Office/School_Address': z.string().min(5, { message: "Please enter your office or school address." }),
-  'Office/School_Number': z.string().optional(),
-  Valid_ID: z.enum(['Driver\'s License', 'Passport', 'SSS ID', 'PhilHealth ID', 'Others']),
+  'Office/School_Number': z.string()
+    .regex(/^\d{0,11}$/, { message: "Please enter your office/school phone number" })
+    .optional(),
+  Valid_ID: z.enum(['Driver\'s License', 'Passport', 'SSS ID', 'PhilHealth ID', 'Student ID', 'National ID', 'Others']),
   Source_of_Income: z.enum(['Salary', 'Business', 'Remittance', 'Scholarship', 'Pension', 'Others']),
 });
 
@@ -118,7 +120,12 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
             <FormItem>
               <FormLabel>Company / School Contact Number</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. +1 (555) 123-4567" {...field} />
+                <Input
+                  placeholder="e.g. 09123456789"
+                  {...field}
+                  maxLength={11}
+                  pattern="\d*"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -146,6 +153,8 @@ export function FundingSourceStep({ onNext, onBack, defaultValues }: FundingSour
                     <SelectItem value="Passport">Passport</SelectItem>
                     <SelectItem value="SSS ID">SSS ID</SelectItem>
                     <SelectItem value="PhilHealth ID">PhilHealth ID</SelectItem>
+                    <SelectItem value="Student ID">Student ID</SelectItem>
+                    <SelectItem value="National ID">National ID</SelectItem>
                     <SelectItem value="Others">Others</SelectItem>
                   </SelectContent>
                 </Select>
