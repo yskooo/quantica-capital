@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { BankDetails } from "@/types/models";
 
 const bankSchema = z.object({
+  Bank_Acc_No: z.string().min(8, { message: "Account number must be at least 8 digits." }).regex(/^\d+$/, { message: "Account number must be numeric." }),
   Bank_Acc_Name: z.string().min(2, { message: "Please enter the account holder name." }),
   Bank_Acc_Date_of_Opening: z.string().min(1, { message: "Please enter the account opening date." }),
   Bank_Name: z.string().min(2, { message: "Please enter the bank name." }),
@@ -25,7 +26,7 @@ const bankSchema = z.object({
 type BankFormValues = z.infer<typeof bankSchema>;
 
 interface BankingDetailsStepProps {
-  onNext: (data: Omit<BankDetails, 'Bank_Acc_No'>) => void;
+  onNext: (data: BankDetails) => void;
   onBack: () => void;
   defaultValues?: Partial<BankDetails>;
 }
@@ -34,6 +35,7 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
   const form = useForm<BankFormValues>({
     resolver: zodResolver(bankSchema),
     defaultValues: {
+      Bank_Acc_No: defaultValues?.Bank_Acc_No || "",
       Bank_Acc_Name: defaultValues?.Bank_Acc_Name || "",
       Bank_Acc_Date_of_Opening: defaultValues?.Bank_Acc_Date_of_Opening || "",
       Bank_Name: defaultValues?.Bank_Name || "",
@@ -42,19 +44,30 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
   });
 
   function onSubmit(data: BankFormValues) {
-    const bankDetails: Omit<BankDetails, 'Bank_Acc_No'> = {
-      Bank_Acc_Name: data.Bank_Acc_Name,
-      Bank_Acc_Date_of_Opening: data.Bank_Acc_Date_of_Opening,
-      Bank_Name: data.Bank_Name,
-      Branch: data.Branch,
-    };
-    
-    onNext(bankDetails);
+    onNext(data as BankDetails);
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="Bank_Acc_No"
+          render={({ field }) => (
+      <FormItem>
+        <FormLabel>Bank Account Number</FormLabel>
+        <FormControl>
+          <Input
+          placeholder="e.g. 1234567890"
+          {...field}
+          maxLength={20} // optional
+          pattern="\d*"
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
         <FormField
           control={form.control}
           name="Bank_Acc_Name"
@@ -69,7 +82,7 @@ export function BankingDetailsStep({ onNext, onBack, defaultValues }: BankingDet
           )}
         />
         
-        <FormField
+        <FormField 
           control={form.control}
           name="Bank_Acc_Date_of_Opening"
           render={({ field }) => (
