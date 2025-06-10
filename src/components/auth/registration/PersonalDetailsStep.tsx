@@ -32,7 +32,7 @@ const personalSchema = z.object({
   Date_of_Birth: z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Please use format: YYYY-MM-DD" }),
   Employment_Status: z.enum(['Employed', 'Unemployed', 'Self-Employed', 'Student', 'Retired']),
-  Purpose_of_Opening: z.enum(['Savings', 'Investment', 'Business', 'Personal Use', 'Others']),
+  Purpose_of_Opening: z.enum(['Savings', 'Investment', 'Business', 'Personal Use', 'Retirement','Others']),
 });
 
 type PersonalFormValues = z.infer<typeof personalSchema>;
@@ -243,6 +243,7 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
                     <SelectItem value="Investment">Investment</SelectItem>
                     <SelectItem value="Business">Business</SelectItem>
                     <SelectItem value="Personal Use">Personal Use</SelectItem>
+                    <SelectItem value="Retirement">Retirement</SelectItem>
                     <SelectItem value="Others">Others</SelectItem>
                   </SelectContent>
                 </Select>
