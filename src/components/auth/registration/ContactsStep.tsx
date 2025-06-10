@@ -137,14 +137,16 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
   return (
     <div className="space-y-6">
       {/* Minimum contacts requirement alert */}
-      <Alert className={contacts.length < 3 ? "border-orange-200 bg-orange-50" : "border-green-200 bg-green-50"}>
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Contact Requirements</AlertTitle>
-        <AlertDescription>
-          You need to add at least 3 contacts to proceed. 
-          Current contacts: {contacts.length}/3 minimum required.
-        </AlertDescription>
-      </Alert>
+      <Alert className="bg-muted/50 border border-border text-white">
+  <AlertTriangle className="h-4 w-4" />
+  <AlertTitle className="text-white">Contact Requirements</AlertTitle>
+  <AlertDescription className="">
+    You need to add at least 3 contacts to proceed. <br />
+    Current contacts: {contacts.length}/3 minimum required.
+  </AlertDescription>
+</Alert>
+
+
 
       {/* Contact List */}
       {contacts.length > 0 && (
@@ -316,7 +318,11 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     <FormItem>
                       <FormLabel>Phone Number</FormLabel>
                       <FormControl>
-                        <Input type="tel" placeholder="+1 (555) 000-0000" {...field} />
+                        <Input type="tel" placeholder="e.g. 09123456789" 
+                        {...field}
+                        maxLength={11}
+                        pattern="\d*"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -330,7 +336,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input placeholder="123 Main St, City" {...field} />
+                        <Input placeholder="123 Anonas St., Santa Mesa, Manila" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
