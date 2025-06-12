@@ -174,7 +174,14 @@ export function ReviewStep({ data, onBack, onSubmit, isSubmitting }: ReviewStepP
           Back
         </Button>
         
-        <Button onClick={onSubmit} disabled={isSubmitting}>
+        <Button
+            onClick={() => {
+              console.log("Submitting data:", data); // ✅ LOGGING HERE
+              onSubmit(); // ✅ Calls the actual submit logic
+            }}
+            disabled={isSubmitting}
+          >
+
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 

@@ -1,26 +1,56 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const {
   pool,
   generateAccId,
   generateFundingId,
-  generateBankAccNo
-} = require('../config/database');  // destructure from your database module
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
+  generateBankAccNo,
+} = require("../config/database");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { body, validationResult } = require("express-validator");
+
+// ✅ UPDATED Contact ID generator to always return 5-character IDs like "C0005"
+async function generateUniqueContactId(connection) {
+  let contactId;
+  let isUnique = false;
+
+  while (!isUnique) {
+    const randomNum = Math.floor(0 + Math.random() * 10000); // 0 to 9999
+    const paddedNum = String(randomNum).padStart(4, "0");     // e.g., "0005", "0421"
+    contactId = `C${paddedNum}`;                              // Final: "C0005"
+
+    console.log("→ contactId:", contactId, "| Length:", contactId.length); // DEBUG
+
+    const [existing] = await connection.execute(
+      "SELECT 1 FROM contact_person_details WHERE Contact_ID = ?",
+      [contactId]
+    );
+
+    if (existing.length === 0) {
+      isUnique = true;
+    }
+  }
+
+  return contactId;
+}
 
 router.post(
-  '/register',
-  // Input validations (adjust as needed)
-  body('personalData.P_Cell_Number').notEmpty().withMessage('Cell number is required'),
-  body('credentials.email').isEmail().withMessage('Valid email required'),
-  body('credentials.password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  "/register",
+  body("personalData.P_Cell_Number")
+    .notEmpty()
+    .withMessage("Cell number is required"),
+  body("credentials.email").isEmail().withMessage("Valid email required"),
+  body("credentials.password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
   async (req, res) => {
+    console.log("Register route hit!");
+    console.log("Received Payload:", req.body);
+    console.log("👉 contacts full structure:\n", JSON.stringify(req.body.contacts, null, 2));
     let connection;
 
     try {
-      // Validate request body
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -29,167 +59,177 @@ router.post(
       const { personalData, bankDetails, sourceOfFunding, contacts, credentials } = req.body;
 
       if (!contacts || contacts.length < 3) {
-        return res.status(400).json({ error: 'Minimum 3 contacts required for registration' });
+        return res.status(400).json({ error: "Minimum 3 contacts required for registration" });
       }
 
-      // Safely trim personalData fields
-      const cellNumberRaw = personalData?.P_Cell_Number;
-      const trimmedCellNumber = typeof cellNumberRaw === 'string' ? cellNumberRaw.trim() : '';
+      const trimmedCellNumber = personalData?.P_Cell_Number
+        ? String(personalData.P_Cell_Number).trim()
+        : "";
 
-      const emailRaw = credentials?.email;
-      const trimmedEmail = typeof emailRaw === 'string' ? emailRaw.trim() : '';
+      const trimmedEmail = credentials?.email?.trim() || "";
+      const trimmedPersonalEmail = personalData?.P_Email?.trim() || "";
 
-      const nameRaw = personalData?.P_Name;
-      const trimmedName = typeof nameRaw === 'string' ? nameRaw.trim() : null;
+      console.log("Trimmed P_Email:", trimmedPersonalEmail);
 
-      const personalEmailRaw = personalData?.P_Email;
-      const trimmedPersonalEmail = typeof personalEmailRaw === 'string' ? personalEmailRaw.trim() : null;
-
-      // Get connection from pool
       connection = await pool.getConnection();
       await connection.beginTransaction();
 
-      // Check duplicate phone number
-      const [existingPhone] = await connection.execute(
-        'SELECT P_Cell_Number FROM personal_data WHERE P_Cell_Number = ?',
-        [trimmedCellNumber]
-      );
-      if (existingPhone.length > 0) {
-        await connection.rollback();
-        return res.status(409).json({ error: 'Phone number already registered' });
-      }
-
-      // Check duplicate email if provided
-      if (trimmedEmail) {
-        const [existingEmail] = await connection.execute(
-          'SELECT P_Email FROM personal_data WHERE P_Email = ?',
-          [trimmedEmail]
-        );
-        if (existingEmail.length > 0) {
-          await connection.rollback();
-          return res.status(409).json({ error: 'Email already registered' });
-        }
-      }
-
-      // Generate IDs
       const accId = await generateAccId();
       const fundingId = await generateFundingId();
-      if (!fundingId) throw new Error('Failed to generate Funding_ID');
+      if (!fundingId) throw new Error("Failed to generate Funding_ID");
       const bankAccNo = generateBankAccNo();
 
-      // Hash password
       let hashedPassword = null;
       if (credentials.password) {
-        hashedPassword = await bcrypt.hash(credentials.password, parseInt(process.env.BCRYPT_ROUNDS) || 10);
+        hashedPassword = await bcrypt.hash(
+          credentials.password,
+          parseInt(process.env.BCRYPT_ROUNDS) || 10
+        );
       }
 
-      // Insert source_of_funding
       await connection.execute(
-        `INSERT INTO source_of_funding (Funding_ID, Nature_of_Work, \`Business/School_Name\`, 
-          \`Office/School_Address\`, \`Office/School_Number\`, Valid_ID, Source_of_Income) 
+        `INSERT INTO source_of_funding (\`Funding_ID\`, \`Nature_of_Work\`, \`Business/School_Name\`, 
+          \`Office/School_Address\`, \`Office/School_Number\`, \`Valid_ID\`, \`Source_of_Income\`) 
           VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           fundingId,
           sourceOfFunding?.Nature_of_Work || null,
-          sourceOfFunding?.['Business/School_Name'] || null,
-          sourceOfFunding?.['Office/School_Address'] || null,
-          sourceOfFunding?.['Office/School_Number'] || null,
+          sourceOfFunding?.["Business/School_Name"] || null,
+          sourceOfFunding?.["Office/School_Address"] || null,
+          sourceOfFunding?.["Office/School_Number"] || null,
           sourceOfFunding?.Valid_ID || null,
           sourceOfFunding?.Source_of_Income || null,
         ]
       );
 
-      // Insert bank details
-      await connection.execute(
-        `INSERT INTO bank_details (Account_ID, Bank_Acc_No, Bank_Name, Branch) VALUES (?, ?, ?, ?)`,
-        [accId, bankAccNo, bankDetails?.Bank_Name || null, bankDetails?.Bank_Address || null]
+      const [fundingExists] = await connection.execute(
+        "SELECT Funding_ID FROM source_of_funding WHERE Funding_ID = ?",
+        [fundingId]
       );
 
+      if (fundingExists.length === 0) {
+        throw new Error("Funding_ID does not exist in source_of_funding.");
+      }
+
+      console.log("Generated Funding_ID:", fundingId);
+
       await connection.execute(
-        `INSERT INTO personal_data (Acc_ID, P_Name, P_Cell_Number, P_Email, P_Password, Funding_ID, Bank_Acc_No)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO bank_details (\`Account_ID\`, \`Bank_Acc_No\`, \`Bank_Name\`, \`Branch\`) 
+         VALUES (?, ?, ?, ?)`,
+        [accId, bankAccNo, bankDetails?.Bank_Name || null, bankDetails?.Branch || null]
+      );
+
+      const [bankExists] = await connection.execute(
+        "SELECT Bank_Acc_No FROM bank_details WHERE Bank_Acc_No = ?",
+        [bankAccNo]
+      );
+
+      if (bankExists.length === 0) {
+        throw new Error("Bank_Acc_No does not exist in bank_details.");
+      }
+
+      console.log("Generated Bank_Acc_No:", bankAccNo);
+
+      await connection.execute(
+        `INSERT INTO personal_data (
+          Acc_ID,
+          P_Name,
+          P_Address,
+          P_Postal_Code,
+          P_Cell_Number,
+          P_Email,
+          Date_of_Birth,
+          Employment_Status,
+          Purpose_of_Opening,
+          P_Password,
+          Funding_ID,
+          Bank_Acc_No
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           accId,
-          trimmedName,
+          personalData.P_Name?.trim() || null,
+          personalData.P_Address?.trim() || null,
+          personalData.P_Postal_Code?.trim() || null,
           trimmedCellNumber,
           trimmedPersonalEmail,
+          personalData.Date_of_Birth || null,
+          personalData.Employment_Status || null,
+          personalData.Purpose_of_Opening || null,
           hashedPassword,
           fundingId,
-          bankAccNo
+          bankAccNo,
         ]
       );
 
-      // Insert contacts
+      console.log("Inserted into personal_data with P_Email:", trimmedPersonalEmail);
+
+      // ✅ Insert contacts with unique and valid Contact_IDs (always 5 characters)
       for (const contact of contacts) {
-        console.log('Contact object:', contact);
+        const { contactDetails } = contact;
 
-        // Access nested contact number correctly if contactDetails exists
-        const rawNumber = contact.contactDetails?.C_Contact_Number || contact.C_Contact_Number;
-        console.log('Raw Contact Number:', rawNumber);
+        const contactId = await generateUniqueContactId(connection); // 5-char ID like "C0005"
 
-        const trimmedNumber = typeof rawNumber === 'string' ? rawNumber.trim() : '';
+        console.log("👉 Final Contact_ID value:", contactId, "| Length:", contactId.length);
+        console.log("➡ Full contactDetails object:", contactDetails);
+        console.log("➡ C_Contact_Number:", contactDetails?.C_Contact_Number);
 
-        if (!trimmedNumber) {
-          throw new Error('Contact number is required for each contact');
+        if (!contactDetails?.C_Contact_Number) {
+          throw new Error("C_Contact_Number is required for every contact");
         }
 
-        // Use the trimmed number and other trimmed fields here for insertion
-        // Make sure to trim other contact fields as well before insertion
-        const trimmedContactName = typeof contact.C_Name === 'string' ? contact.C_Name.trim() : null;
-        const trimmedContactAddress = typeof contact.C_Address === 'string' ? contact.C_Address.trim() : null;
-        const trimmedContactPostal = typeof contact.C_Postal_Code === 'string' ? contact.C_Postal_Code.trim() : null;
-        const trimmedContactEmail = typeof contact.C_Email === 'string' ? contact.C_Email.trim() : null;
-
-        const contactId = 'C' + Math.floor(10000 + Math.random() * 90000).toString().slice(1);
-
         await connection.execute(
-          `INSERT INTO contact_person_details 
-            (Contact_ID, C_Name, C_Address, C_Postal_Code, C_Email, C_Contact_Number) 
-          VALUES (?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO contact_person_details (
+            \`Contact_ID\`, 
+            \`C_Name\`, 
+            \`C_Address\`, 
+            \`C_Postal_Code\`, 
+            \`C_Email\`, 
+            \`C_Contact_Number\`
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
           [
             contactId,
-            trimmedContactName,
-            trimmedContactAddress,
-            trimmedContactPostal,
-            trimmedContactEmail,
-            trimmedNumber,
+            contactDetails.C_Name?.trim() || null,
+            contactDetails.C_Address?.trim() || null,
+            contactDetails.C_Postal_Code?.trim() || null,
+            contactDetails.C_Email?.trim() || null,
+            contactDetails.C_Contact_Number?.trim() || null,
           ]
         );
       }
 
-
       await connection.commit();
 
-      // Issue JWT token
       const token = jwt.sign(
         { accId, email: trimmedEmail, phone: trimmedCellNumber },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+        process.env.JWT_SECRET || "your-secret-key",
+        { expiresIn: process.env.JWT_EXPIRES_IN || "24h" }
       );
 
       res.status(201).json({
-        message: 'Registration successful',
+        message: "Registration successful",
         data: {
           user: {
             accId,
             email: trimmedEmail,
-            name: trimmedName,
+            name: personalData.P_Name?.trim(),
             phone: trimmedCellNumber,
           },
           token,
         },
       });
-
     } catch (error) {
       if (connection) {
         try {
           await connection.rollback();
         } catch (rollbackErr) {
-          console.error('Rollback error:', rollbackErr);
+          console.error("Rollback error:", rollbackErr);
         }
       }
-      console.error('Registration error:', error);
-      res.status(500).json({ error: 'Registration failed', message: error.message });
+      console.error("Registration error:", error);
+      res.status(500).json({
+        error: "Registration failed",
+        message: error.message,
+      });
     } finally {
       if (connection) connection.release();
     }
