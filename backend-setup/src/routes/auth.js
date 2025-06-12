@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 const {
@@ -14,8 +15,10 @@ const { body, validationResult } = require("express-validator");
 async function generateUniqueContactId(connection) {
   let contactId;
   let isUnique = false;
+  let attempts = 0;
+  const maxAttempts = 100;
 
-  while (!isUnique) {
+  while (!isUnique && attempts < maxAttempts) {
     const randomNum = Math.floor(0 + Math.random() * 10000); // 0 to 9999
     const paddedNum = String(randomNum).padStart(4, "0");     // e.g., "0005", "0421"
     contactId = `C${paddedNum}`;                              // Final: "C0005"
@@ -30,6 +33,11 @@ async function generateUniqueContactId(connection) {
     if (existing.length === 0) {
       isUnique = true;
     }
+    attempts++;
+  }
+
+  if (!isUnique) {
+    throw new Error("Failed to generate unique Contact_ID after maximum attempts");
   }
 
   return contactId;
@@ -74,6 +82,16 @@ router.post(
       connection = await pool.getConnection();
       await connection.beginTransaction();
 
+      // Check if email already exists in personal_data
+      const [existingUser] = await connection.execute(
+        "SELECT Acc_ID FROM personal_data WHERE P_Email = ?",
+        [trimmedPersonalEmail]
+      );
+
+      if (existingUser.length > 0) {
+        return res.status(400).json({ error: "Email already registered" });
+      }
+
       const accId = await generateAccId();
       const fundingId = await generateFundingId();
       if (!fundingId) throw new Error("Failed to generate Funding_ID");
@@ -114,9 +132,9 @@ router.post(
       console.log("Generated Funding_ID:", fundingId);
 
       await connection.execute(
-        `INSERT INTO bank_details (\`Account_ID\`, \`Bank_Acc_No\`, \`Bank_Name\`, \`Branch\`) 
-         VALUES (?, ?, ?, ?)`,
-        [accId, bankAccNo, bankDetails?.Bank_Name || null, bankDetails?.Branch || null]
+        `INSERT INTO bank_details (\`Bank_Acc_No\`, \`Bank_Name\`, \`Branch\`) 
+         VALUES (?, ?, ?)`,
+        [bankAccNo, bankDetails?.Bank_Name || null, bankDetails?.Branch || null]
       );
 
       const [bankExists] = await connection.execute(
@@ -195,6 +213,22 @@ router.post(
             contactDetails.C_Contact_Number?.trim() || null,
           ]
         );
+
+        // Insert role of contact relationship
+        await connection.execute(
+          `INSERT INTO role_of_contact (
+            \`Acc_ID\`,
+            \`C_Role\`,
+            \`Contact_ID\`,
+            \`C_Relationship\`
+          ) VALUES (?, ?, ?, ?)`,
+          [
+            accId,
+            contact.role,
+            contactId,
+            contact.relationship || null,
+          ]
+        );
       }
 
       await connection.commit();
@@ -228,6 +262,84 @@ router.post(
       console.error("Registration error:", error);
       res.status(500).json({
         error: "Registration failed",
+        message: error.message,
+      });
+    } finally {
+      if (connection) connection.release();
+    }
+  }
+);
+
+// Login route using personal_data table
+router.post(
+  "/login",
+  body("email").isEmail().withMessage("Valid email required"),
+  body("password").notEmpty().withMessage("Password is required"),
+  async (req, res) => {
+    console.log("Login route hit!");
+    let connection;
+
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email, password } = req.body;
+
+      connection = await pool.getConnection();
+
+      // Find user by email in personal_data table
+      const [users] = await connection.execute(
+        "SELECT * FROM personal_data WHERE P_Email = ?",
+        [email.trim()]
+      );
+
+      if (users.length === 0) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      const user = users[0];
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.P_Password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          accId: user.Acc_ID, 
+          email: user.P_Email, 
+          phone: user.P_Cell_Number 
+        },
+        process.env.JWT_SECRET || "your-secret-key",
+        { expiresIn: process.env.JWT_EXPIRES_IN || "24h" }
+      );
+
+      res.json({
+        message: "Login successful",
+        data: {
+          user: {
+            accId: user.Acc_ID,
+            email: user.P_Email,
+            name: user.P_Name,
+            phone: user.P_Cell_Number,
+            address: user.P_Address,
+            postalCode: user.P_Postal_Code,
+            dateOfBirth: user.Date_of_Birth,
+            employmentStatus: user.Employment_Status,
+            purposeOfOpening: user.Purpose_of_Opening
+          },
+          token,
+        },
+      });
+
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({
+        error: "Login failed",
         message: error.message,
       });
     } finally {
