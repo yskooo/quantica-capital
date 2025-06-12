@@ -53,7 +53,7 @@ const generateContactId = async () => {
 // Generate incremental Funding ID (e.g., F0001, F0002, etc.)
 const generateFundingId = async () => {
   const [rows] = await pool.query(
-    'SELECT Funding_ID FROM funding_source ORDER BY Funding_ID DESC LIMIT 1'
+    'SELECT Funding_ID FROM source_of_funding ORDER BY Funding_ID DESC LIMIT 1'
   );
   
   let lastNum = 0;
