@@ -22,7 +22,8 @@ const accountSchema = z.object({
     .email({ message: "Please enter a valid email address." })
     .max(60, { message: "Email cannot exceed 60 characters." }),
   password: z.string()
-    .min(4, { message: "Password must be at least 4 characters." }),
+    .min(6, { message: "Password must be at least 6 characters." })
+    .max(255, { message: "Password must be at most 255 characters." }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match.",
@@ -64,7 +65,7 @@ export function AccountStep({ onNext, defaultValues }: AccountStepProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email (P_Email)</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input 
                   placeholder="name@example.com" 
@@ -88,7 +89,7 @@ export function AccountStep({ onNext, defaultValues }: AccountStepProps) {
               <FormControl>
                 <div className="relative">
                   <Input 
-                    placeholder="Enter at least 4 characters" 
+                    placeholder="Enter at least 6 characters" 
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
                     className="pr-10" 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -80,7 +81,16 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
   };
 
   function onSubmit(data: PersonalFormValues) {
-    // Store phone number as 11 digits - no conversion
+    // Normalize phone number for backend validation
+    // let normalizedPhone = data.P_Cell_Number.replace(/\D/g, ''); // Remove all non-digits
+    
+    // Convert to standard format for backend
+    // if (normalizedPhone.startsWith('09')) {
+    //   normalizedPhone = '63' + normalizedPhone.substring(1);
+    // } else if (normalizedPhone.startsWith('639')) {
+    //   normalizedPhone = normalizedPhone;
+    // }
+    
     const personalData: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID"> = { 
       P_Name: data.P_Name,
       P_Address: data.P_Address,
