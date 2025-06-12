@@ -102,30 +102,12 @@ const Profile = () => {
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
-    
-    // If user enters a number starting with 63, remove it
-    if (value.startsWith('63')) {
-      value = value.substring(2);
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length <= 11) {
+      e.target.value = value;
+    } else {
+      e.target.value = value.slice(0, 11);
     }
-    
-    // Limit to 11 digits
-    if (value.length > 11) {
-      value = value.slice(0, 11);
-    }
-    
-    // Handle different input formats
-    if (value.length > 0) {
-      if (value.startsWith('9')) {
-        // If starts with 9, add 0 prefix
-        value = '0' + value;
-      } else if (!value.startsWith('09')) {
-        // If doesn't start with 09, ensure it does
-        value = '09' + value.slice(value.length > 2 ? 2 : 0);
-      }
-    }
-
-    e.target.value = value;
   };
 
   const updateProfile = async (data: any, section: string) => {

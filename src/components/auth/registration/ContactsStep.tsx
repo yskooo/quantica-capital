@@ -254,7 +254,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                               { value: "Referee 1", label: "Referee 1" },
                               { value: "Referee 2", label: "Referee 2" }
                             ].map(option => {
-                              const isDisabled = editingContact === null && usedRoles.includes(option.value as ContactFormValues["role"]);
+                              const isDisabled = editingContact === null && usedRoles.includes(option.value);
                               return (
                                 <SelectItem 
                                   key={option.value} 
