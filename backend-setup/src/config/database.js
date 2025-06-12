@@ -1,68 +1,51 @@
-
-require('dotenv').config(); 
-
 const mysql = require('mysql2/promise');
+const { v4: uuidv4 } = require('uuid');
 
-const dbConfig = {
-  host: process.env.DB_HOST || '127.0.0.1',
-  port: process.env.DB_PORT || 3306,
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || 'stockacc_db',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || '',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-  acquireTimeout: 60000,
-  timeout: 60000,
-  reconnect: true
-};
+  queueLimit: 0
+});
 
-// Create connection pool
-const pool = mysql.createPool(dbConfig);
-
-// Test database connection
-const testConnection = async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log('✅ Database connected successfully');
-    connection.release();
-    return true;
-  } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
-    return false;
-  }
-};
-
-// Generate unique IDs
+// Generate 4-character Account ID with uniqueness check
 const generateAccId = async () => {
-  const [rows] = await pool.execute('SELECT MAX(Acc_ID) as maxId FROM personal_data');
-  const maxId = rows[0]?.maxId || 'A000';
-  const num = parseInt(maxId.substring(1)) + 1;
-  return `A${num.toString().padStart(3, '0')}`;
+  let accId;
+  let exists = true;
+
+  while (exists) {
+    // Random 4-character alphanumeric string
+    accId = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    // Check if accId already exists in DB
+    const [rows] = await pool.query('SELECT 1 FROM accounts WHERE Acc_ID = ?', [accId]);
+    exists = rows.length > 0;
+  }
+
+  return accId;
 };
 
-const generateContactId = async () => {
-  const [rows] = await pool.execute('SELECT MAX(Contact_ID) as maxId FROM contact_person_details');
-  const maxId = rows[0]?.maxId || 'C0000';
-  const num = parseInt(maxId.substring(1)) + 1;
-  return `C${num.toString().padStart(4, '0')}`;
+// Generate Contact ID without uniqueness check (add if needed)
+const generateContactId = () => {
+  return 'CON-' + (Math.random().toString(16).slice(2, 10)).toUpperCase();
 };
 
-const generateFundingId = async () => {
-  const [rows] = await pool.execute('SELECT MAX(Funding_ID) as maxId FROM source_of_funding');
-  const maxId = rows[0]?.maxId || 'F000000';
-  const num = parseInt(maxId.substring(1)) + 1;
-  return `F${num.toString().padStart(6, '0')}`;
+// Short Funding ID (7 characters)
+const generateFundingId = () => {
+  // 'F' + 6 alphanumeric characters = 7 total
+  return 'F' + Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
+// Generate Bank Account Number (10-digit random number string)
 const generateBankAccNo = () => {
-  // Generate random 19-digit bank account number
-  return Math.random().toString().slice(2, 21).padStart(19, '0');
+  return Math.floor(1000000000 + Math.random() * 9000000000).toString();
 };
 
 module.exports = {
   pool,
-  testConnection,
   generateAccId,
   generateContactId,
   generateFundingId,
