@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -68,6 +67,10 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
   const [editingContact, setEditingContact] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(defaultValues.length === 0);
 
+  const usedRoles = contacts.map((c) => c.role);
+  const isRoleUsed = (role: ContactFormValues["role"]) =>
+    editingContact === null && usedRoles.includes(role);
+
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
@@ -76,8 +79,8 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
       C_Postal_Code: "",
       C_Email: "",
       C_Contact_Number: "",
-      role: "Kin", // Default role
-      relationship: "Friend", // Default relationship
+      role: "Kin",
+      relationship: "Friend",
     },
   });
 
@@ -98,7 +101,6 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
 
   const deleteContact = (index: number) => {
     setContacts(contacts.filter((_, i) => i !== index));
-    // If we were editing this contact, reset the form
     if (editingContact === index) {
       form.reset();
       setEditingContact(null);
@@ -106,6 +108,16 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
   };
 
   function onSubmit(data: ContactFormValues) {
+    if (editingContact === null && usedRoles.includes(data.role)) {
+      alert(`A contact with the role "${data.role}" already exists.`);
+      return;
+    }
+
+    if (editingContact === null && contacts.length >= 3) {
+      alert("You can only add exactly 3 contacts: 1 Kin, 1 Referee 1, and 1 Referee 2.");
+      return;
+    }
+
     const newContact: ContactRole = {
       role: data.role,
       relationship: data.relationship,
@@ -115,40 +127,37 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
         C_Postal_Code: data.C_Postal_Code,
         C_Email: data.C_Email,
         C_Contact_Number: data.C_Contact_Number,
-      }
+      },
     };
 
     if (editingContact !== null) {
-      // Update existing contact
       const updatedContacts = [...contacts];
       updatedContacts[editingContact] = newContact;
       setContacts(updatedContacts);
       setEditingContact(null);
     } else {
-      // Add new contact
       setContacts([...contacts, newContact]);
     }
 
-    // Reset form and hide it
     form.reset();
     setShowForm(false);
   }
 
   return (
     <div className="space-y-6">
-      {/* Minimum contacts requirement alert */}
       <Alert className="bg-muted/50 border border-border text-white">
-  <AlertTriangle className="h-4 w-4" />
-  <AlertTitle className="text-white">Contact Requirements</AlertTitle>
-  <AlertDescription className="">
-    You need to add at least 3 contacts to proceed. <br />
-    Current contacts: {contacts.length}/3 minimum required.
-  </AlertDescription>
-</Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle className="text-white">Contact Requirements</AlertTitle>
+        <AlertDescription>
+          Required: 1 Kin, 1 Referee 1, 1 Referee 2. You currently have:
+          <ul className="list-disc ml-6 mt-2">
+            <li>Kin: {usedRoles.includes("Kin") ? "✅" : "❌"}</li>
+            <li>Referee 1: {usedRoles.includes("Referee 1") ? "✅" : "❌"}</li>
+            <li>Referee 2: {usedRoles.includes("Referee 2") ? "✅" : "❌"}</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
-
-
-      {/* Contact List */}
       {contacts.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Added Contacts ({contacts.length})</h3>
@@ -171,19 +180,12 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                   <p>{contact.contactDetails.C_Contact_Number}</p>
                 </CardContent>
                 <CardFooter className="pt-0 flex justify-end gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => editContact(index)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => editContact(index)}>
                     Edit
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
-                      >
+                      <Button variant="destructive" size="sm">
                         Remove
                       </Button>
                     </AlertDialogTrigger>
@@ -191,7 +193,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                       <AlertDialogHeader>
                         <AlertDialogTitle>Remove Contact</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to remove {contact.contactDetails.C_Name} from your contacts? This action cannot be undone.
+                          Are you sure you want to remove {contact.contactDetails.C_Name}?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -208,15 +210,14 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
           </div>
         </div>
       )}
-      
-      {/* Add/Edit Contact Form */}
+
       {showForm ? (
         <Card className="backdrop-blur-sm border">
           <CardHeader>
             <CardTitle>{editingContact !== null ? "Edit Contact" : "Add Contact"}</CardTitle>
             <CardDescription>
-              {editingContact !== null 
-                ? "Update the information for this contact." 
+              {editingContact !== null
+                ? "Update the information for this contact."
                 : "Add an emergency contact or referee for your account."}
             </CardDescription>
           </CardHeader>
@@ -230,36 +231,35 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Role</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Kin">Kin (Emergency Contact)</SelectItem>
-                            <SelectItem value="Referee 1">Referee 1</SelectItem>
-                            <SelectItem value="Referee 2">Referee 2</SelectItem>
+                            <SelectItem value="Kin" disabled={isRoleUsed("Kin")}>
+                              Kin (Emergency Contact)
+                            </SelectItem>
+                            <SelectItem value="Referee 1" disabled={isRoleUsed("Referee 1")}>
+                              Referee 1
+                            </SelectItem>
+                            <SelectItem value="Referee 2" disabled={isRoleUsed("Referee 2")}>
+                              Referee 2
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
                   <FormField
                     control={form.control}
                     name="relationship"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Relationship</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select relationship" />
@@ -282,7 +282,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
                   name="C_Name"
@@ -296,7 +296,6 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="C_Email"
@@ -310,7 +309,6 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="C_Contact_Number"
@@ -318,17 +316,12 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     <FormItem>
                       <FormLabel>Phone Number</FormLabel>
                       <FormControl>
-                        <Input type="tel" placeholder="e.g. 09123456789" 
-                        {...field}
-                        maxLength={11}
-                        pattern="\d*"
-                        />
+                        <Input type="tel" placeholder="09123456789" maxLength={11} pattern="\d*" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="C_Address"
@@ -342,7 +335,6 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="C_Postal_Code"
@@ -356,11 +348,10 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                     </FormItem>
                   )}
                 />
-                
                 <div className="flex gap-2 pt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => {
                       form.reset();
                       setEditingContact(null);
@@ -379,26 +370,22 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
           </CardContent>
         </Card>
       ) : (
-        <Button 
-          onClick={() => setShowForm(true)} 
-          variant="outline" 
+        <Button
+          onClick={() => setShowForm(true)}
+          variant="outline"
           className="w-full"
+          disabled={contacts.length >= 3}
         >
           <Plus className="w-4 h-4 mr-2" />
           Add a Contact
         </Button>
       )}
-      
-      {/* Navigation Buttons */}
+
       <div className="flex justify-between pt-4 mt-4 border-t">
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        
-        <Button 
-          onClick={() => onNext(contacts)} 
-          disabled={contacts.length < 3}
-        >
+        <Button onClick={() => onNext(contacts)} disabled={contacts.length < 3}>
           Continue {contacts.length < 3 && `(${3 - contacts.length} more contacts needed)`}
         </Button>
       </div>
