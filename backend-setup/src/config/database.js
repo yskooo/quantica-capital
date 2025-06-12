@@ -21,7 +21,7 @@ const generateAccId = async () => {
     // Random 4-character alphanumeric string
     accId = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-    // Check if accId already exists in personal_data table
+    // Check if accId already exists in personal_data table (NOT accounts table)
     const [rows] = await pool.query('SELECT 1 FROM personal_data WHERE Acc_ID = ?', [accId]);
     exists = rows.length > 0;
   }
