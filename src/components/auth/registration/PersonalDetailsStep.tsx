@@ -62,18 +62,24 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
     let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
     
+    // If user enters a number starting with 63, remove it
+    if (value.startsWith('63')) {
+      value = value.substring(2);
+    }
+    
     // Limit to 11 digits
     if (value.length > 11) {
       value = value.slice(0, 11);
     }
     
-    // Ensure it starts with 09 if user types digits
-    if (value.length > 0 && !value.startsWith('09')) {
+    // Handle different input formats
+    if (value.length > 0) {
       if (value.startsWith('9')) {
+        // If starts with 9, add 0 prefix
         value = '0' + value;
-      } else if (value.length >= 2 && !value.startsWith('09')) {
-        // If user types something that doesn't start with 09, replace it
-        value = '09' + value.slice(2);
+      } else if (!value.startsWith('09')) {
+        // If doesn't start with 09, ensure it does
+        value = '09' + value.slice(value.length > 2 ? 2 : 0);
       }
     }
     
@@ -81,16 +87,6 @@ export function PersonalDetailsStep({ onNext, onBack, defaultValues }: PersonalD
   };
 
   function onSubmit(data: PersonalFormValues) {
-    // Normalize phone number for backend validation
-    // let normalizedPhone = data.P_Cell_Number.replace(/\D/g, ''); // Remove all non-digits
-    
-    // Convert to standard format for backend
-    // if (normalizedPhone.startsWith('09')) {
-    //   normalizedPhone = '63' + normalizedPhone.substring(1);
-    // } else if (normalizedPhone.startsWith('639')) {
-    //   normalizedPhone = normalizedPhone;
-    // }
-    
     const personalData: Omit<PersonalData, "Funding_ID" | "Bank_Acc_No" | "Acc_ID"> = { 
       P_Name: data.P_Name,
       P_Address: data.P_Address,
