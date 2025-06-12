@@ -204,14 +204,14 @@ const handleSubmitRegistration = async () => {
 
             {currentStep === 4 && (
               <>
-                <Alert className="bg-muted/50 mb-4">
+                {/* <Alert className="bg-muted/50 mb-4">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Required Information</AlertTitle>
                   <AlertDescription>
                     You must add at least one contact with the role “Kin” to
                     proceed.
                   </AlertDescription>
-                </Alert>
+                </Alert> */}
 
                 <ContactsStep
                   onNext={handleContactsSubmit}
