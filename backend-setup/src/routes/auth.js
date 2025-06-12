@@ -67,7 +67,7 @@ router.post(
         : "";
 
       const trimmedEmail = credentials?.email?.trim() || "";
-      const trimmedPersonalEmail = personalData?.P_Email?.trim() || "";
+      const trimmedPersonalEmail = personalData?.P_Email?.trim() || trimmedEmail;
 
       console.log("Trimmed P_Email:", trimmedPersonalEmail);
 
