@@ -92,6 +92,16 @@ router.post(
         return res.status(400).json({ error: "Email already registered" });
       }
 
+      // Check if phone number already exists in personal_data
+      const [existingPhone] = await connection.execute(
+        "SELECT Acc_ID FROM personal_data WHERE P_Cell_Number = ?",
+        [trimmedCellNumber]
+      );
+
+      if (existingPhone.length > 0) {
+        return res.status(400).json({ error: "Phone number already registered" });
+      }
+
       const accId = await generateAccId();
       const fundingId = await generateFundingId();
       if (!fundingId) throw new Error("Failed to generate Funding_ID");
@@ -132,9 +142,15 @@ router.post(
       console.log("Generated Funding_ID:", fundingId);
 
       await connection.execute(
-        `INSERT INTO bank_details (\`Bank_Acc_No\`, \`Bank_Name\`, \`Branch\`) 
-         VALUES (?, ?, ?)`,
-        [bankAccNo, bankDetails?.Bank_Name || null, bankDetails?.Branch || null]
+        `INSERT INTO bank_details (\`Bank_Acc_No\`, \`Bank_Acc_Name\`, \`Bank_Acc_Date_of_Opening\`, \`Bank_Name\`, \`Branch\`) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          bankAccNo, 
+          bankDetails?.Bank_Acc_Name || null,
+          bankDetails?.Bank_Acc_Date_of_Opening || null,
+          bankDetails?.Bank_Name || null, 
+          bankDetails?.Branch || null
+        ]
       );
 
       const [bankExists] = await connection.execute(
@@ -234,7 +250,7 @@ router.post(
       await connection.commit();
 
       const token = jwt.sign(
-        { accId, email: trimmedEmail, phone: trimmedCellNumber },
+        { accId, email: trimmedPersonalEmail, phone: trimmedCellNumber },
         process.env.JWT_SECRET || "your-secret-key",
         { expiresIn: process.env.JWT_EXPIRES_IN || "24h" }
       );
@@ -244,7 +260,7 @@ router.post(
         data: {
           user: {
             accId,
-            email: trimmedEmail,
+            email: trimmedPersonalEmail,
             name: personalData.P_Name?.trim(),
             phone: trimmedCellNumber,
           },
