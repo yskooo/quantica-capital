@@ -142,22 +142,34 @@ const registerUser = async (req, res) => {
       ]
     );
 
-    console.log("Inserted into personal_data with P_Email:", trimmedPersonalEmail);
+    console.log("Inserted into personal_data with P_Email:", trimmedPersonalEmail);    // Validate that we have unique roles for contacts
+    const roles = contacts.map(c => c.role);
+    const uniqueRoles = new Set(roles);
+    if (roles.length !== uniqueRoles.size) {
+      throw new Error("Each contact must have a unique role (Kin, Referee 1, or Referee 2)");
+    }
 
-    // Insert contacts with unique and valid Contact_IDs (always 5 characters)
+    // Insert contacts with unique and valid Contact_IDs
     for (const contact of contacts) {
       const { contactDetails } = contact;
 
-      const contactId = await generateUniqueContactId(connection); // 5-char ID like "C0005"
+      const contactId = await generateUniqueContactId(connection);
 
-      console.log("👉 Final Contact_ID value:", contactId, "| Length:", contactId.length);
-      console.log("➡ Full contactDetails object:", contactDetails);
-      console.log("➡ C_Contact_Number:", contactDetails?.C_Contact_Number);
+      console.log("👉 Processing contact:", {
+        contactId,
+        role: contact.role,
+        relationship: contact.relationship
+      });
 
       if (!contactDetails?.C_Contact_Number) {
         throw new Error("C_Contact_Number is required for every contact");
       }
 
+      if (!contact.role || !['Kin', 'Referee 1', 'Referee 2'].includes(contact.role)) {
+        throw new Error(`Invalid role: ${contact.role}. Must be one of: Kin, Referee 1, Referee 2`);
+      }
+
+      // First insert the contact details
       await connection.execute(
         `INSERT INTO contact_person_details (
           \`Contact_ID\`, 
@@ -177,21 +189,28 @@ const registerUser = async (req, res) => {
         ]
       );
 
-      // Insert role of contact relationship
-      await connection.execute(
-        `INSERT INTO role_of_contact (
-          \`Acc_ID\`,
-          \`C_Role\`,
-          \`Contact_ID\`,
-          \`C_Relationship\`
-        ) VALUES (?, ?, ?, ?)`,
-        [
-          accId,
-          contact.role,
-          contactId,
-          contact.relationship || null,
-        ]
-      );
+      // Then insert the role relationship
+      try {
+        await connection.execute(
+          `INSERT INTO role_of_contact (
+            \`Acc_ID\`,
+            \`C_Role\`,
+            \`Contact_ID\`,
+            \`C_Relationship\`
+          ) VALUES (?, ?, ?, ?)`,
+          [
+            accId,
+            contact.role,
+            contactId,
+            contact.relationship || null,
+          ]
+        );
+      } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+          throw new Error(`Duplicate role ${contact.role} found. Each contact must have a unique role.`);
+        }
+        throw err;
+      }
     }
 
     await connection.commit();

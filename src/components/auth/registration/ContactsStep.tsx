@@ -106,15 +106,27 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
       setEditingContact(null);
     }
   };
-
   function onSubmit(data: ContactFormValues) {
-    if (editingContact === null && usedRoles.includes(data.role)) {
-      alert(`A contact with the role "${data.role}" already exists.`);
+    // If editing, exclude the current contact from role uniqueness check
+    const otherRoles = contacts
+      .filter((_, index) => index !== editingContact)
+      .map(c => c.role);
+
+    // Check if this role is already used by another contact
+    if (otherRoles.includes(data.role)) {
+      form.setError("role", {
+        type: "manual",
+        message: `A contact with the role "${data.role}" already exists.`
+      });
       return;
     }
 
+    // Ensure we don't exceed 3 contacts
     if (editingContact === null && contacts.length >= 3) {
-      alert("You can only add exactly 3 contacts: 1 Kin, 1 Referee 1, and 1 Referee 2.");
+      form.setError("role", {
+        type: "manual",
+        message: "You can only add exactly 3 contacts: 1 Kin, 1 Referee 1, and 1 Referee 2."
+      });
       return;
     }
 
@@ -236,17 +248,24 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                             <SelectTrigger>
                               <SelectValue placeholder="Select role" />
                             </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Kin" disabled={isRoleUsed("Kin")}>
-                              Kin (Emergency Contact)
-                            </SelectItem>
-                            <SelectItem value="Referee 1" disabled={isRoleUsed("Referee 1")}>
-                              Referee 1
-                            </SelectItem>
-                            <SelectItem value="Referee 2" disabled={isRoleUsed("Referee 2")}>
-                              Referee 2
-                            </SelectItem>
+                          </FormControl>                          <SelectContent>
+                            {[
+                              { value: "Kin", label: "Kin (Emergency Contact)" },
+                              { value: "Referee 1", label: "Referee 1" },
+                              { value: "Referee 2", label: "Referee 2" }
+                            ].map(option => {
+                              const isDisabled = editingContact === null && usedRoles.includes(option.value);
+                              return (
+                                <SelectItem 
+                                  key={option.value} 
+                                  value={option.value}
+                                  disabled={isDisabled}
+                                >
+                                  {option.label}
+                                  {isDisabled && " (Already Added)"}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -384,8 +403,21 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
       <div className="flex justify-between pt-4 mt-4 border-t">
         <Button type="button" variant="outline" onClick={onBack}>
           Back
-        </Button>
-        <Button onClick={() => onNext(contacts)} disabled={contacts.length < 3}>
+        </Button>        <Button 
+          onClick={() => {
+            const hasKin = contacts.some(c => c.role === "Kin");
+            const hasRef1 = contacts.some(c => c.role === "Referee 1");
+            const hasRef2 = contacts.some(c => c.role === "Referee 2");
+            
+            if (!hasKin || !hasRef1 || !hasRef2) {
+              alert("You must add exactly one contact for each role: Kin, Referee 1, and Referee 2");
+              return;
+            }
+            
+            onNext(contacts);
+          }} 
+          disabled={contacts.length < 3}
+        >
           Continue {contacts.length < 3 && `(${3 - contacts.length} more contacts needed)`}
         </Button>
       </div>

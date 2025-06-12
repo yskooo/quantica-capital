@@ -12,7 +12,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// Generate 4-character Account ID with uniqueness check against personal_data table
+// Generate 4-character Account ID with uniqueness check across all tables
 const generateAccId = async () => {
   let accId;
   let exists = true;
@@ -21,9 +21,11 @@ const generateAccId = async () => {
     // Random 4-character alphanumeric string
     accId = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-    // Check if accId already exists in personal_data table (NOT accounts table)
-    const [rows] = await pool.query('SELECT 1 FROM personal_data WHERE Acc_ID = ?', [accId]);
-    exists = rows.length > 0;
+    // Check if accId exists in either personal_data or role_of_contact tables
+    const [personalDataRows] = await pool.query('SELECT 1 FROM personal_data WHERE Acc_ID = ?', [accId]);
+    const [roleContactRows] = await pool.query('SELECT 1 FROM role_of_contact WHERE Acc_ID = ?', [accId]);
+    
+    exists = personalDataRows.length > 0 || roleContactRows.length > 0;
   }
 
   return accId;
