@@ -1,3 +1,4 @@
+
 const mysql = require('mysql2/promise');
 const { v4: uuidv4 } = require('uuid');
 
@@ -11,7 +12,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// Generate 4-character Account ID with uniqueness check
+// Generate 4-character Account ID with uniqueness check against personal_data table
 const generateAccId = async () => {
   let accId;
   let exists = true;
@@ -20,8 +21,8 @@ const generateAccId = async () => {
     // Random 4-character alphanumeric string
     accId = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-    // Check if accId already exists in DB
-    const [rows] = await pool.query('SELECT 1 FROM accounts WHERE Acc_ID = ?', [accId]);
+    // Check if accId already exists in personal_data table
+    const [rows] = await pool.query('SELECT 1 FROM personal_data WHERE Acc_ID = ?', [accId]);
     exists = rows.length > 0;
   }
 
