@@ -1,4 +1,3 @@
-
 const { pool, generateAccId, generateFundingId, generateBankAccNo } = require("../config/database");
 const { generateUniqueContactId } = require("../utils/contactId");
 const bcrypt = require("bcrypt");
@@ -17,6 +16,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: "Minimum 3 contacts required for registration" });
     }
 
+    // Keep phone number as 11 digits - no conversion to international format
     const trimmedCellNumber = personalData?.P_Cell_Number
       ? String(personalData.P_Cell_Number).trim()
       : "";
@@ -111,6 +111,7 @@ const registerUser = async (req, res) => {
 
     console.log("Generated Bank_Acc_No:", bankAccNo);
 
+    // Store phone number as received (11 digits) - no conversion
     await connection.execute(
       `INSERT INTO personal_data (
         Acc_ID,
@@ -131,7 +132,7 @@ const registerUser = async (req, res) => {
         personalData.P_Name?.trim() || null,
         personalData.P_Address?.trim() || null,
         personalData.P_Postal_Code?.trim() || null,
-        trimmedCellNumber,
+        trimmedCellNumber, // Store as string, no conversion
         trimmedPersonalEmail,
         personalData.Date_of_Birth || null,
         personalData.Employment_Status || null,
@@ -142,7 +143,9 @@ const registerUser = async (req, res) => {
       ]
     );
 
-    console.log("Inserted into personal_data with P_Email:", trimmedPersonalEmail);    // Validate that we have unique roles for contacts
+    console.log("Inserted into personal_data with P_Email:", trimmedPersonalEmail);
+
+    // Validate that we have unique roles for contacts
     const roles = contacts.map(c => c.role);
     const uniqueRoles = new Set(roles);
     if (roles.length !== uniqueRoles.size) {
@@ -228,7 +231,7 @@ const registerUser = async (req, res) => {
           accId,
           email: trimmedPersonalEmail,
           name: personalData.P_Name?.trim(),
-          phone: trimmedCellNumber,
+          phone: trimmedCellNumber, // Return as 11 digits
         },
         token,
       },

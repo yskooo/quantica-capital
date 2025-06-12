@@ -118,6 +118,12 @@ const Profile = () => {
       if (!userData) return;
 
       const user = JSON.parse(userData);
+      
+      // For phone number updates, send as string (11 digits)
+      if (section === 'personalData' && data.P_Cell_Number) {
+        data.P_Cell_Number = String(data.P_Cell_Number);
+      }
+      
       const response = await userAPI.updateProfile(user.accId, { [section]: data });
       
       if (response.error) {
@@ -358,7 +364,7 @@ const Profile = () => {
                         P_Name: formData.get('fullName'),
                         P_Address: formData.get('address'),
                         P_Postal_Code: formData.get('postalCode'),
-                        P_Cell_Number: parseInt(formData.get('phone') as string),
+                        P_Cell_Number: formData.get('phone'), // Send as string
                         Date_of_Birth: formData.get('dateOfBirth'),
                         Employment_Status: formData.get('employmentStatus'),
                         Purpose_of_Opening: formData.get('purposeOfOpening')
@@ -384,7 +390,7 @@ const Profile = () => {
                         <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number (11 digits max)</Label>
+                        <Label htmlFor="phone">Phone Number (11 digits)</Label>
                         <Input 
                           id="phone" 
                           name="phone"
