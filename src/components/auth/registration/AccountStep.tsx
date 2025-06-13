@@ -64,7 +64,7 @@ export function AccountStep({ onNext, defaultValues }: AccountStepProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email (P_Email)</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input 
                   placeholder="name@example.com" 

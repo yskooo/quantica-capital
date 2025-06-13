@@ -127,7 +127,7 @@ const Login = () => {
           </form>
         </Card>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

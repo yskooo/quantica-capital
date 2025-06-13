@@ -243,7 +243,7 @@ const handleSubmitRegistration = async () => {
           </CardContent>
         </Card>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };
