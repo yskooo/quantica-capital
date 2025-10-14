@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ChartLine, ArrowDown, ArrowUp, FileText, Shield } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import PortfolioSummary from "@/components/dashboard/PortfolioSummary";
 import TransactionHistory from "@/components/portfolio/TransactionHistory";
@@ -164,7 +163,6 @@ const Portfolio = () => {
           </div>
         </main>
       </div>
-      <Footer />
     </div>
   );
 };

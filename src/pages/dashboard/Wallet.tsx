@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/select";
 import Navbar from "@/components/layout/Navbar";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import Footer from "@/components/layout/Footer";
 import BankAccountSelector from "@/components/wallet/BankAccountSelector";
 import TransactionHistory from "@/components/wallet/TransactionHistory";
 import FundingForm from "@/components/wallet/FundingForm";
@@ -159,7 +158,6 @@ const WalletPage = () => {
           </div>
         </main>
       </div>
-      <Footer />
     </div>
   );
 };

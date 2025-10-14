@@ -125,11 +125,6 @@ export default {
         "slide-in-left": "slide-in-left 0.3s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
       },
-      boxShadow: {
-        'glow': '0 0 10px rgba(0, 200, 83, 0.5)',
-        'glow-lg': '0 0 20px rgba(0, 200, 83, 0.6)',
-        'gold': '0 0 10px rgba(255, 215, 0, 0.5)',
-      },
     },
   },
   plugins: [require("tailwindcss-animate")],

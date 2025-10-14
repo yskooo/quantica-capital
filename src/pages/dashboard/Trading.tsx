@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import TradingViewWidget from "@/components/trading/TradingViewWidget";
 import OrderForm from "@/components/trading/OrderForm";
@@ -233,7 +232,6 @@ const Trading = () => {
           </div>
         </main>
       </div>
-      <Footer />
     </div>
   );
 };

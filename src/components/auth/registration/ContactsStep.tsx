@@ -67,7 +67,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
   const [editingContact, setEditingContact] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(defaultValues.length === 0);
 
-  const usedRoles = contacts.map((c) => c.role);
+  const usedRoles = contacts.map((c) => c.role) as Array<"Kin" | "Referee 1" | "Referee 2">;
   const isRoleUsed = (role: ContactFormValues["role"]) =>
     editingContact === null && usedRoles.includes(role);
 
@@ -254,7 +254,7 @@ export function ContactsStep({ onNext, onBack, defaultValues = [] }: ContactsSte
                               { value: "Referee 1", label: "Referee 1" },
                               { value: "Referee 2", label: "Referee 2" }
                             ].map(option => {
-                              const isDisabled = editingContact === null && usedRoles.includes(option.value);
+                              const isDisabled = editingContact === null && usedRoles.includes(option.value as "Kin" | "Referee 1" | "Referee 2");
                               return (
                                 <SelectItem 
                                   key={option.value} 
