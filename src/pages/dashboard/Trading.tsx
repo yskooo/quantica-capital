@@ -92,8 +92,8 @@ const Trading = () => {
             {/* Trading View Chart and Order Form */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <div className="lg:col-span-2">
-                <Card className="glass-card">
-                  <CardHeader className="pb-2">
+                <Card className="border-border/40 bg-card/50">
+                  <CardHeader className="pb-2 border-b border-border/40">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
                       <CardTitle className="text-xl font-semibold flex items-center gap-2">
                         <span>{symbolData.symbol}</span>
@@ -144,9 +144,9 @@ const Trading = () => {
             {/* Watchlist and Order History */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Watchlist */}
-              <Card className="glass-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-semibold">Watchlist</CardTitle>
+              <Card className="border-border/40 bg-card/50">
+                <CardHeader className="pb-2 border-b border-border/40">
+                  <CardTitle className="text-lg font-medium">Watchlist</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
@@ -191,9 +191,9 @@ const Trading = () => {
               </Card>
 
               {/* Order History */}
-              <Card className="glass-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-semibold">Recent Orders</CardTitle>
+              <Card className="border-border/40 bg-card/50">
+                <CardHeader className="pb-2 border-b border-border/40">
+                  <CardTitle className="text-lg font-medium">Recent Orders</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">

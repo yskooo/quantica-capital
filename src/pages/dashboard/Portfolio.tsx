@@ -56,9 +56,9 @@ const Portfolio = () => {
             </div>
 
             {/* Portfolio Summary */}
-            <Card className="glass-card mb-6">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-semibold">Portfolio Overview</CardTitle>
+            <Card className="border-border/40 bg-card/50 mb-8">
+              <CardHeader className="pb-2 border-b border-border/40">
+                <CardTitle className="text-lg font-medium">Portfolio Overview</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -98,7 +98,7 @@ const Portfolio = () => {
               </TabsList>
               
               <TabsContent value="positions" className="mt-4">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardContent className="p-0">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">

@@ -61,8 +61,8 @@ const WalletPage = () => {
             </div>
 
             {/* Balance Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Card className="glass-card">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="border-l-2 border-l-primary border-border/40 bg-card/50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                     Available Balance
@@ -75,7 +75,7 @@ const WalletPage = () => {
                 </CardContent>
               </Card>
               
-              <Card className="glass-card">
+              <Card className="border-l-2 border-l-accent border-border/40 bg-card/50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                     Pending Balance
@@ -88,7 +88,7 @@ const WalletPage = () => {
                 </CardContent>
               </Card>
               
-              <Card className="glass-card">
+              <Card className="border-l-2 border-l-primary border-border/40 bg-card/50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                     Total Portfolio Value
@@ -103,7 +103,7 @@ const WalletPage = () => {
             </div>
 
             {/* Main content with tabs */}
-            <Card className="glass-card mb-6">
+            <Card className="border-border/40 bg-card/50 mb-6">
               <Tabs defaultValue="deposit" className="w-full">
                 <CardHeader className="pb-0">
                   <TabsList className="grid grid-cols-3 mb-4">

@@ -351,7 +351,7 @@ const Profile = () => {
               </TabsList>
 
               <TabsContent value="personal" className="space-y-6">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader>
                     <CardTitle>Personal Information</CardTitle>
                     <CardDescription>Update your personal details</CardDescription>
@@ -454,7 +454,7 @@ const Profile = () => {
               </TabsContent>
               
               <TabsContent value="bank" className="space-y-6">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader>
                     <CardTitle>Bank Account Details</CardTitle>
                     <CardDescription>Update your banking information</CardDescription>
@@ -523,7 +523,7 @@ const Profile = () => {
                   </CardContent>
                 </Card>
                 
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader>
                     <CardTitle>Source of Funding</CardTitle>
                     <CardDescription>Update your source of income information</CardDescription>
@@ -601,7 +601,7 @@ const Profile = () => {
               </TabsContent>
 
               <TabsContent value="contacts" className="space-y-6">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
@@ -833,7 +833,7 @@ const Profile = () => {
               </TabsContent>
 
               <TabsContent value="preferences" className="space-y-6">
-                <Card className="glass-card border-red-200">
+                <Card className="border-border/40 bg-card/50 border-destructive/40">
                   <CardHeader>
                     <CardTitle className="text-red-600">Danger Zone</CardTitle>
                     <CardDescription>Permanently delete your account and all associated data</CardDescription>

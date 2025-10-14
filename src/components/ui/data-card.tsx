@@ -33,17 +33,17 @@ const DataCard = ({
   };
 
   return (
-    <Card className={cn("glass-card", className)} {...props}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+    <Card className={cn("border-border/40 bg-card/50 hover:bg-card/70 transition-colors", className)} {...props}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground/80 flex items-center justify-between font-medium">
           {title}
           {icon && <span className="text-primary">{icon}</span>}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+      <CardContent className="space-y-1">
+        <div className="text-3xl font-bold tracking-tight">{value}</div>
         {trend && trendValue && (
-          <p className={`text-xs mt-1 flex items-center ${getTrendColor()}`}>
+          <p className={`text-xs mt-1 flex items-center font-medium ${getTrendColor()}`}>
             {trend === "up" && "↑"}
             {trend === "down" && "↓"}
             {trend === "neutral" && "→"} {trendValue}

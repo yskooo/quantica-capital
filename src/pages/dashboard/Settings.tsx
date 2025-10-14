@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
 const Settings = () => {
@@ -78,7 +78,7 @@ const Settings = () => {
               
               {/* Account Settings Tab */}
               <TabsContent value="account" className="space-y-6 mt-4">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl font-semibold flex items-center gap-2">
                       <User className="h-5 w-5 text-primary" /> Personal Information
@@ -151,7 +151,7 @@ const Settings = () => {
               
               {/* Security Tab */}
               <TabsContent value="security" className="space-y-6 mt-4">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl font-semibold flex items-center gap-2">
                       <Lock className="h-5 w-5 text-primary" /> Security Settings
@@ -233,7 +233,7 @@ const Settings = () => {
               
               {/* Preferences Tab */}
               <TabsContent value="preferences" className="space-y-6 mt-4">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl font-semibold flex items-center gap-2">
                       <Sliders className="h-5 w-5 text-primary" /> App Preferences
@@ -322,7 +322,7 @@ const Settings = () => {
               
               {/* Notifications Tab */}
               <TabsContent value="notifications" className="space-y-6 mt-4">
-                <Card className="glass-card">
+                <Card className="border-border/40 bg-card/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl font-semibold flex items-center gap-2">
                       <Bell className="h-5 w-5 text-primary" /> Notification Settings
@@ -391,7 +391,7 @@ const Settings = () => {
             </Tabs>
             
             {/* API Keys Section */}
-            <Card className="glass-card mb-6">
+            <Card className="border-border/40 bg-card/50 mb-6">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xl font-semibold flex items-center gap-2">
                   <Key className="h-5 w-5 text-primary" /> API Keys & Integration
@@ -478,7 +478,6 @@ const Settings = () => {
           </div>
         </main>
       </div>
-      <Footer />
     </div>
   );
 };

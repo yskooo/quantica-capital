@@ -77,9 +77,9 @@ const MarketOverview = () => {
       </div>
 
       {/* TradingView Chart */}
-      <div className="chart-container h-64 md:h-[300px]">
-        <div className="text-sm text-muted-foreground mb-2 flex items-center justify-between">
-          <span>{marketTab === "index" ? "S&P 500" : marketTab === "forex" ? "USD/JPY" : "BTC/USD"} - {timeframe}</span>
+      <div className="h-64 md:h-[300px] bg-card/30 rounded-lg p-4">
+        <div className="text-sm text-muted-foreground/80 mb-2 flex items-center justify-between">
+          <span className="uppercase tracking-wider text-xs font-medium">{marketTab === "index" ? "S&P 500" : marketTab === "forex" ? "USD/JPY" : "BTC/USD"} - {timeframe}</span>
           <span className="text-xs font-mono">Powered by TradingView</span>
         </div>
         <TradingViewWidget symbol={symbol} height={240} />
@@ -90,11 +90,11 @@ const MarketOverview = () => {
         {(marketTab === "index" ? marketOverviewIndices : 
           marketTab === "forex" ? marketOverviewCurrencies : 
           cryptoCurrencies).map((index, i) => (
-          <Card key={i} className="glass-card">
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">{index.name}</p>
-              <p className="text-xl font-bold mt-1">{index.value}</p>
-              <p className={`text-xs mt-1 ${index.change.startsWith("+") ? "text-market-bull" : "text-market-bear"}`}>
+          <Card key={i} className="border-border/40 bg-card/50 hover:bg-card/70 transition-colors">
+            <CardContent className="p-4 space-y-1">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground/80 font-medium">{index.name}</p>
+              <p className="text-xl font-bold tracking-tight mt-2">{index.value}</p>
+              <p className={`text-xs font-medium ${index.change.startsWith("+") ? "text-market-bull" : "text-market-bear"}`}>
                 {index.change}
               </p>
             </CardContent>

@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DataCard from "@/components/ui/data-card";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import PortfolioSummary from "@/components/dashboard/PortfolioSummary";
 import MarketOverview from "@/components/dashboard/MarketOverview";
@@ -50,18 +49,20 @@ const Dashboard = () => {
             </div>
 
             {/* Portfolio Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <DataCard 
                 title="Portfolio Value" 
                 value="$124,532.80" 
                 trend="up" 
                 trendValue="+2.5% today" 
                 icon={<Briefcase className="h-4 w-4" />} 
+                className="border-l-2 border-l-primary"
               />
               <DataCard 
                 title="Available Cash" 
                 value="$34,123.50" 
                 icon={<Wallet className="h-4 w-4" />}
+                className="border-l-2 border-l-accent"
               />
               <DataCard 
                 title="Today's Return" 
@@ -69,6 +70,7 @@ const Dashboard = () => {
                 trend="up" 
                 trendValue="+1.2%" 
                 icon={<TrendingUp className="h-4 w-4" />}
+                className="border-l-2 border-l-market-bull"
               />
               <DataCard 
                 title="Total P/L" 
@@ -76,52 +78,53 @@ const Dashboard = () => {
                 trend="up" 
                 trendValue="+24.5% all time" 
                 icon={<ChartLine className="h-4 w-4" />}
+                className="border-l-2 border-l-primary"
               />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               {/* Portfolio Holdings */}
-              <Card className="glass-card lg:col-span-2">
-                <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                  <CardTitle className="text-xl font-semibold">Portfolio Summary</CardTitle>
+              <Card className="border-border/40 bg-card/50 lg:col-span-2">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-border/40">
+                  <CardTitle className="text-lg font-medium">Portfolio Summary</CardTitle>
                   <Link to="/portfolio">
-                    <Button variant="ghost" size="sm">View All</Button>
+                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">View All</Button>
                   </Link>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <PortfolioSummary />
                 </CardContent>
               </Card>
 
               {/* Recent Activities */}
-              <Card className="glass-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-semibold">Recent Activities</CardTitle>
+              <Card className="border-border/40 bg-card/50">
+                <CardHeader className="pb-2 border-b border-border/40">
+                  <CardTitle className="text-lg font-medium">Recent Activities</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <RecentActivities />
                 </CardContent>
               </Card>
             </div>
 
             {/* Market Overview with Trading Link */}
-            <Card className="glass-card mb-6">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-xl font-semibold">Market Overview</CardTitle>
+            <Card className="border-border/40 bg-card/50 mb-6">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-border/40">
+                <CardTitle className="text-lg font-medium">Market Overview</CardTitle>
                 <Link to="/trading">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2 text-primary hover:text-primary/80">
                     <ChartLine className="h-4 w-4" /> Trading
                   </Button>
                 </Link>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <MarketOverview />
               </CardContent>
             </Card>
           </div>
         </main>
       </div>
-      <Footer />
+      
     </div>
   );
 };

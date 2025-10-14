@@ -35,7 +35,7 @@ const DashboardSidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 bottom-0 w-64 bg-card z-30 border-r border-border/50 pt-16 transition-transform duration-300 ease-in-out",
+          "fixed left-0 top-0 bottom-0 w-64 bg-background/95 backdrop-blur-sm z-30 border-r border-border/30 pt-16 transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-16"
         )}
       >
